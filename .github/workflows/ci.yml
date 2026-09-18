@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run tests
+        working-directory: backend
+        run: python -m pytest tests/ -v
+
+      - name: Run detection engine against the real labeled sample dataset
+        run: python scripts/load_dataset.py --reset-db
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install security tooling
+        run: pip install bandit pip-audit
+
+      - name: Bandit (static analysis for common security issues)
+        working-directory: backend
+        run: bandit -r app -q
+
+      - name: pip-audit (known-vulnerable dependency scan)
+        working-directory: backend
+        run: pip-audit -r requirements.txt || true
+        # pip-audit is informational here (`|| true`): it can fail CI on
+        # advisories in transitive deps with no fix yet available. Findings
+        # still show up in the job log for review rather than being silenced.

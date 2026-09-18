@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SentinelFlow</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #121822; --border: #212b38; --text: #e6edf3;
+    --muted: #8b98a5; --critical: #f85149; --high: #ff9d4d; --medium: #e3b341;
+    --low: #58a6ff; --accent: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    padding: 20px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  header h1 { font-size: 20px; margin: 0; }
+  header span { color: var(--muted); font-size: 13px; }
+  main { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .card .n { font-size: 28px; font-weight: 700; }
+  .card .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
+  .card.critical .n { color: var(--critical); }
+  .card.high .n { color: var(--high); }
+  .card.medium .n { color: var(--medium); }
+  .card.low .n { color: var(--low); }
+  section { margin-bottom: 28px; }
+  section h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+  tr:last-child td { border-bottom: none; }
+  .badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .badge.CRITICAL { background: rgba(248,81,73,.15); color: var(--critical); }
+  .badge.HIGH { background: rgba(255,157,77,.15); color: var(--high); }
+  .badge.MEDIUM { background: rgba(227,179,65,.15); color: var(--medium); }
+  .badge.LOW { background: rgba(88,166,255,.15); color: var(--low); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .empty { color: var(--muted); padding: 20px; text-align: center; }
+  .refresh { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SentinelFlow</h1>
+  <span>Network &amp; IoT threat monitoring · <span id="status">connecting…</span></span>
+</header>
+<main>
+  <div class="cards" id="cards"></div>
+
+  <section>
+    <h2>Top detections</h2>
+    <table id="top-detections-table">
+      <thead><tr><th>Detection</th><th>Count</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Recent alerts</h2>
+    <table id="alerts-table">
+      <thead>
+        <tr>
+          <th>Alert</th><th>Severity</th><th>Detection</th><th>Source</th>
+          <th>MITRE</th><th>Risk</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <p class="refresh">Auto-refreshes every 5s. API base: <span class="mono" id="api-base"></span></p>
+</main>
+
+<script>
+const API_BASE = window.location.origin;
+document.getElementById("api-base").textContent = API_BASE;
+
+async function fetchJSON(path) {
+  const res = await fetch(API_BASE + path);
+  if (!res.ok) throw new Error(`${path} -> ${res.status}`);
+  return res.json();
+}
+
+function cardHTML(cls, n, label) {
+  return `<div class="card ${cls}"><div class="n">${n}</div><div class="l">${label}</div></div>`;
+}
+
+async function refresh() {
+  try {
+    const stats = await fetchJSON("/statistics");
+    document.getElementById("status").textContent = "live";
+
+    document.getElementById("cards").innerHTML = [
+      cardHTML("", stats.events_analyzed, "Events analysed"),
+      cardHTML("", stats.total_alerts, "Total alerts"),
+      cardHTML("critical", stats.critical_alerts, "Critical"),
+      cardHTML("high", stats.high_alerts, "High"),
+      cardHTML("medium", stats.medium_alerts, "Medium"),
+      cardHTML("low", stats.low_alerts, "Low"),
+      cardHTML("", stats.suspicious_devices, "Suspicious devices"),
+    ].join("");
+
+    const topBody = document.querySelector("#top-detections-table tbody");
+    topBody.innerHTML = stats.top_detections.length
+      ? stats.top_detections.map(d => `<tr><td>${d.detection}</td><td>${d.count}</td></tr>`).join("")
+      : `<tr><td colspan="2" class="empty">No detections yet — run scripts/load_dataset.py or POST to /events</td></tr>`;
+
+    const alerts = await fetchJSON("/alerts?limit=25");
+    const alertsBody = document.querySelector("#alerts-table tbody");
+    alertsBody.innerHTML = alerts.length
+      ? alerts.map(a => `
+        <tr>
+          <td class="mono">${a.alert_code}</td>
+          <td><span class="badge ${a.severity}">${a.severity}</span></td>
+          <td>${a.detection}</td>
+          <td class="mono">${a.source_ip} → ${a.destination_ip}</td>
+          <td>${a.mitre_technique ? `${a.mitre_technique} (${a.mitre_technique_name})` : "—"}</td>
+          <td>${a.risk_score}</td>
+          <td>${a.status}</td>
+        </tr>`).join("")
+      : `<tr><td colspan="7" class="empty">No alerts yet</td></tr>`;
+  } catch (err) {
+    document.getElementById("status").textContent = "disconnected";
+    console.error(err);
+  }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

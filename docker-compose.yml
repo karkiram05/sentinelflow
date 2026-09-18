@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sentinelflow
+      POSTGRES_PASSWORD: sentinelflow
+      POSTGRES_DB: sentinelflow
+    volumes:
+      - sentinelflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentinelflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://sentinelflow:sentinelflow@db:5432/sentinelflow
+    ports:
+      - "8000:8000"
+
+volumes:
+  sentinelflow_pgdata:
