@@ -16,6 +16,13 @@ COPY frontend /frontend
 
 ENV PYTHONUNBUFFERED=1
 
+# Run as a non-root user -- this is a security-focused project; there's no
+# reason the API process needs root inside its own container, and a
+# container-escape or dependency-RCE bug is strictly worse if it does.
+RUN useradd --create-home --uid 10001 sentinelflow \
+    && chown -R sentinelflow:sentinelflow /app
+USER sentinelflow
+
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

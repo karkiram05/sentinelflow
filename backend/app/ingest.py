@@ -8,6 +8,7 @@ import uuid
 from sqlalchemy.orm import Session
 
 from app import models
+from app.detection import risk
 from app.detection.engine import evaluate_event
 from app.state import detection_state
 
@@ -50,6 +51,12 @@ def record_event(db: Session, event_in: dict) -> tuple[models.Event, models.Aler
     alert = None
     result = evaluate_event(event.features, detection_state.anomaly_detector)
     if result is not None:
+        # alert_count at this point is the number of PRIOR alerts from this
+        # source (it's incremented below, after this read) -- that's the
+        # repeat-offender signal risk.apply_repeat_offender_boost wants.
+        boosted_score = risk.apply_repeat_offender_boost(result.risk_score, src_device.alert_count)
+        severity = risk.severity_band(boosted_score)
+
         alert = models.Alert(
             alert_code=f"ALT-{uuid.uuid4().hex[:8].upper()}",
             event_id=event.id,
@@ -62,13 +69,13 @@ def record_event(db: Session, event_in: dict) -> tuple[models.Event, models.Aler
             mitre_technique=result.mitre_technique,
             mitre_technique_name=result.mitre_technique_name,
             confidence=result.confidence,
-            risk_score=result.risk_score,
-            severity=result.severity,
+            risk_score=boosted_score,
+            severity=severity,
             status="OPEN",
         )
         db.add(alert)
         src_device.alert_count += 1
-        src_device.risk_score = max(src_device.risk_score, result.risk_score)
+        src_device.risk_score = max(src_device.risk_score, boosted_score)
 
     db.commit()
     db.refresh(event)

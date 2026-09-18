@@ -105,3 +105,50 @@ def test_device_not_found_returns_404():
 def test_alert_not_found_returns_404():
     response = client.get("/alerts/999999")
     assert response.status_code == 404
+
+
+def test_non_ip_source_is_rejected():
+    """Regression test: source_ip/destination_ip must be real IP addresses.
+    Before this validation existed, arbitrary strings (including markup)
+    were accepted here and later rendered into the dashboard's innerHTML --
+    a stored-XSS path. See schemas.py's _validate_ip docstring."""
+    response = client.post("/events", json={
+        "source_ip": "<img src=x onerror=alert(1)>",
+        "destination_ip": "10.9.9.9",
+        "protocol": "tcp",
+        "features": {},
+    })
+    assert response.status_code == 422
+
+
+def test_repeated_alerts_from_same_source_escalate_risk():
+    """A source that keeps triggering the same detection should see its
+    risk score climb (bounded), not stay flat -- see
+    app.detection.risk.repeat_offender_boost."""
+    scores = []
+    for _ in range(4):
+        client.post("/events", json={
+            "source_ip": "10.6.6.6",
+            "destination_ip": "10.6.6.7",
+            "protocol": "tcp",
+            "destination_port": 22,
+            "features": {"land": 1},
+        })
+        # /alerts is ordered by risk_score desc, so the just-added alert
+        # (monotonically >= the previous ones) is always first.
+        alerts = client.get("/alerts", params={"source_ip": "10.6.6.6"}).json()
+        scores.append(alerts[0]["risk_score"])
+
+    assert scores == sorted(scores)  # non-decreasing across repeats
+    assert scores[-1] > scores[0]    # and strictly higher by the end
+    assert scores[-1] <= 100.0
+
+
+def test_non_ip_destination_is_rejected():
+    response = client.post("/events", json={
+        "source_ip": "10.9.9.9",
+        "destination_ip": "not-an-ip",
+        "protocol": "tcp",
+        "features": {},
+    })
+    assert response.status_code == 422

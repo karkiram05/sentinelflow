@@ -1,11 +1,15 @@
 {
-  "rows_evaluated": 1279,
-  "true_positives": 571,
-  "false_positives": 20,
-  "true_negatives": 40,
-  "false_negatives": 648,
-  "precision": 0.9662,
-  "recall": 0.4684,
+  "methodology": "stratified train/test split; Isolation Forest fit on train only, metrics computed on held-out test split only",
+  "rows_total": 1279,
+  "rows_fit_split": 767,
+  "rows_test_split": 512,
+  "rows_evaluated": 512,
+  "true_positives": 229,
+  "false_positives": 9,
+  "true_negatives": 15,
+  "false_negatives": 259,
+  "precision": 0.9622,
+  "recall": 0.4693,
   "f1_score": 0.6309,
-  "accuracy": 0.4777
+  "accuracy": 0.4766
 }

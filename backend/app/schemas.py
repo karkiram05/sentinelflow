@@ -1,7 +1,27 @@
 import datetime as dt
+import ipaddress
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+
+
+def _validate_ip(value: str) -> str:
+    """Reject anything that isn't a real IPv4/IPv6 address.
+
+    This exists specifically so that source_ip/destination_ip can never
+    carry attacker-controlled markup through to the dashboard. Before this
+    validator, any string was accepted here and later interpolated into
+    the frontend's innerHTML (see frontend/index.html) -- a stored-XSS path
+    if a value resembling markup was submitted as an "IP". The frontend
+    now also escapes these fields itself (defense in depth), but rejecting
+    non-IP input at the boundary is the correct primary fix: a network
+    flow's address field is not supposed to be free text.
+    """
+    try:
+        ipaddress.ip_address(value)
+    except ValueError as exc:
+        raise ValueError(f"{value!r} is not a valid IPv4/IPv6 address") from exc
+    return value
 
 
 class EventIn(BaseModel):
@@ -18,6 +38,11 @@ class EventIn(BaseModel):
     dst_bytes: int = 0
     features: dict = {}
     ground_truth_label: Optional[str] = None
+
+    @field_validator("source_ip", "destination_ip")
+    @classmethod
+    def _ip_must_be_valid(cls, value: str) -> str:
+        return _validate_ip(value)
 
 
 class EventOut(EventIn):

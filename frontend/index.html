@@ -91,8 +91,20 @@ async function fetchJSON(path) {
   return res.json();
 }
 
+// Every field rendered below ultimately originates from event data the API
+// accepted (source_ip, destination_ip, detection names, etc). The backend
+// validates source_ip/destination_ip as real IP addresses (see
+// backend/app/schemas.py), but the dashboard treats all API values as
+// untrusted on principle and escapes them before building HTML, rather
+// than relying solely on that upstream validation to hold forever.
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[ch]));
+}
+
 function cardHTML(cls, n, label) {
-  return `<div class="card ${cls}"><div class="n">${n}</div><div class="l">${label}</div></div>`;
+  return `<div class="card ${cls}"><div class="n">${esc(n)}</div><div class="l">${esc(label)}</div></div>`;
 }
 
 async function refresh() {
@@ -112,7 +124,7 @@ async function refresh() {
 
     const topBody = document.querySelector("#top-detections-table tbody");
     topBody.innerHTML = stats.top_detections.length
-      ? stats.top_detections.map(d => `<tr><td>${d.detection}</td><td>${d.count}</td></tr>`).join("")
+      ? stats.top_detections.map(d => `<tr><td>${esc(d.detection)}</td><td>${esc(d.count)}</td></tr>`).join("")
       : `<tr><td colspan="2" class="empty">No detections yet — run scripts/load_dataset.py or POST to /events</td></tr>`;
 
     const alerts = await fetchJSON("/alerts?limit=25");
@@ -120,13 +132,13 @@ async function refresh() {
     alertsBody.innerHTML = alerts.length
       ? alerts.map(a => `
         <tr>
-          <td class="mono">${a.alert_code}</td>
-          <td><span class="badge ${a.severity}">${a.severity}</span></td>
-          <td>${a.detection}</td>
-          <td class="mono">${a.source_ip} → ${a.destination_ip}</td>
-          <td>${a.mitre_technique ? `${a.mitre_technique} (${a.mitre_technique_name})` : "—"}</td>
-          <td>${a.risk_score}</td>
-          <td>${a.status}</td>
+          <td class="mono">${esc(a.alert_code)}</td>
+          <td><span class="badge ${esc(a.severity)}">${esc(a.severity)}</span></td>
+          <td>${esc(a.detection)}</td>
+          <td class="mono">${esc(a.source_ip)} → ${esc(a.destination_ip)}</td>
+          <td>${a.mitre_technique ? `${esc(a.mitre_technique)} (${esc(a.mitre_technique_name)})` : "—"}</td>
+          <td>${esc(a.risk_score)}</td>
+          <td>${esc(a.status)}</td>
         </tr>`).join("")
       : `<tr><td colspan="7" class="empty">No alerts yet</td></tr>`;
   } catch (err) {

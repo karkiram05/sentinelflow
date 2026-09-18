@@ -36,7 +36,8 @@ this is treated as seriously as the detection logic.
 | **Spoofing** | `source_ip` / `destination_ip` in `POST /events` are client-supplied strings, not cryptographically verified | Out of scope for a telemetry ingestion API (the same is true of NetFlow/Zeek data by nature) -- SentinelFlow documents this as an assumption: ingestion must sit behind a trusted collector, not accept telemetry directly from the internet | If deployed directly internet-facing, an attacker could inject fabricated source IPs to pollute device risk scores |
 | **Tampering** | Alert `status` field (OPEN/ACKNOWLEDGED/CLOSED) | `PATCH /alerts/{id}` validates status against an allow-list (`VALID_STATUSES` in `routers/alerts.py`), rejecting anything else with 400 | No authentication yet (see Roadmap) -- anyone who can reach the API can close alerts |
 | **Repudiation** | No action currently logged with an actor identity | `created_at` timestamps exist on events/alerts, but there is no audit log of *who* changed an alert's status | Cannot currently prove who acknowledged/closed an alert. Flagged as a gap, not silently ignored |
-| **Information Disclosure** | `GET /alerts`, `GET /events`, `GET /devices` return full detail, unauthenticated in this MVP | SQLAlchemy ORM + parameterized queries throughout (no raw string-built SQL anywhere in `routers/`), so SQL injection is not a live vector. Field values are escaped by the browser's `textContent`/template rendering, not raw `innerHTML`, on the dashboard | **No authentication/authorization is implemented in this MVP.** This is the single most important gap before any real deployment -- see Roadmap |
+| **Information Disclosure** | `GET /alerts`, `GET /events`, `GET /devices` return full detail, unauthenticated in this MVP | SQLAlchemy ORM + parameterized queries throughout (no raw string-built SQL anywhere in `routers/`), so SQL injection is not a live vector | **No authentication/authorization is implemented in this MVP.** This is the single most important gap before any real deployment -- see Roadmap |
+| **Tampering / Stored XSS via `source_ip`/`destination_ip`** | The dashboard (`frontend/index.html`) builds table rows with `innerHTML` from alert/event fields returned by the API, including `source_ip`/`destination_ip`, which originate from client-supplied `POST /events` payloads | Two layers, not one: (1) `schemas.py` validates `source_ip`/`destination_ip` as real IPv4/IPv6 addresses via `ipaddress.ip_address()`, rejecting anything else with 422 before it ever reaches the database; (2) the frontend's `esc()` helper HTML-escapes every interpolated value before it's inserted via `innerHTML`, as defense in depth in case a future field is added without equivalent backend validation | This was a real stored-XSS path in an earlier version of this codebase -- this threat model previously (incorrectly) claimed field values were already safely escaped, when the code actually inserted them into `innerHTML` unescaped and the API accepted any string as an "IP". Both are fixed now (see `backend/app/schemas.py` and `frontend/index.html`); this row documents the finding rather than quietly dropping it once fixed |
 | **Denial of Service** | `POST /events` has no rate limiting | FastAPI + Uvicorn defaults only | A flood of POST requests could exhaust DB connections; no rate limiting or backpressure implemented |
 | **Elevation of Privilege** | No user roles exist yet -- everyone who can reach the API has full read/write | N/A | Directly follows from the missing auth layer above |
 
@@ -44,7 +45,10 @@ this is treated as seriously as the detection logic.
 
 All API input is validated through Pydantic schemas (`schemas.py`) before
 it reaches the database or the detection engine -- unexpected types are
-rejected with a 422 before any code runs on them. The `features` dict
+rejected with a 422 before any code runs on them. `source_ip` and
+`destination_ip` specifically are validated as real IPv4/IPv6 addresses
+(not just non-empty strings), since they flow through to the dashboard's
+rendering (see the Information Disclosure row above). The `features` dict
 accepts arbitrary keys (by design, so new detection features can be added
 without an API contract change), but every value the rule engine and ML
 model actually read is coerced through `_get()` / `numeric_vector()` with
@@ -56,9 +60,14 @@ not a crash.
 - **Bandit** (`ci.yml` `security` job) -- static analysis for common Python
   security anti-patterns (hardcoded secrets, `eval`, insecure deserialization,
   etc.) on every push
-- **pip-audit** -- flags dependencies with known CVEs
+- **pip-audit** -- fails the build on any dependency with a known CVE that
+  has an available fix (see `ci.yml`'s comment for the exception policy)
 - **Dependabot** (`.github/dependabot.yml`) -- weekly PRs for pip, Docker
   base image, and GitHub Actions updates
+- **GitHub Actions pinned to commit SHA** (not mutable tags), workflow
+  permissions defaulted to `contents: read`, and `persist-credentials:
+  false` on checkout -- the same supply-chain hardening this project's
+  sibling repo, TrustGraph, statically detects when it's missing elsewhere
 
 ## Before this goes anywhere near production
 

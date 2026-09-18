@@ -1,4 +1,10 @@
-from app.detection.risk import combined_confidence, risk_score, severity_band
+from app.detection.risk import (
+    apply_repeat_offender_boost,
+    combined_confidence,
+    repeat_offender_boost,
+    risk_score,
+    severity_band,
+)
 
 
 def test_combined_confidence_rule_only():
@@ -31,3 +37,21 @@ def test_severity_bands():
     assert severity_band(10) == "LOW"
     assert severity_band(85) == "CRITICAL"
     assert severity_band(84.9) == "HIGH"
+
+
+def test_repeat_offender_boost_is_zero_for_first_alert():
+    assert repeat_offender_boost(0) == 0.0
+
+
+def test_repeat_offender_boost_scales_then_caps():
+    assert repeat_offender_boost(1) == 3.0
+    assert repeat_offender_boost(2) == 6.0
+    assert repeat_offender_boost(100) == 15.0  # capped, not unbounded
+
+
+def test_apply_repeat_offender_boost_cannot_exceed_100():
+    assert apply_repeat_offender_boost(95.0, prior_alert_count=10) == 100.0
+
+
+def test_apply_repeat_offender_boost_no_prior_alerts_unchanged():
+    assert apply_repeat_offender_boost(42.0, prior_alert_count=0) == 42.0

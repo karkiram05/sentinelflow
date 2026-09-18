@@ -102,6 +102,20 @@ makes it usable against live traffic where you don't have labels.
 
 Cut from the original scope on purpose, rather than half-built:
 
+- **A real telemetry adapter layer.** `POST /events` currently expects a
+  `features` dict shaped like NSL-KDD's engineered connection fields
+  (`root_shell`, `num_failed_logins`, `hot`, and so on) because that's what
+  the rules and the held-out evaluation are built and tuned against (see
+  "A note on the input format" in `docs/results.md`). A production
+  deployment needs a translation layer in front of this that derives those
+  same engineered fields from whatever the real source actually is -- a
+  Zeek `conn.log`, NetFlow/IPFIX, or host/auth logs -- each of which would
+  need its own adapter module (`collectors/zeek/`, `collectors/netflow/`,
+  etc.) mapping raw fields onto the common feature schema this project's
+  rules already key on. This is the single biggest gap between "detection
+  logic that works against a labeled dataset" and "detection logic
+  deployed against real traffic," and it's called out explicitly rather
+  than left implied by the README's original "flow telemetry" framing.
 - Live capture via Zeek or Suricata as a flow source
 - Threat intelligence enrichment (VirusTotal / AbuseIPDB IP reputation)
 - Time-windowed / cross-flow correlation for slow-and-low attacks
@@ -109,3 +123,7 @@ Cut from the original scope on purpose, rather than half-built:
   dashboard, which is about detections, not infra health)
 - Model persistence and versioning
 - Cloud deployment
+- A fuller risk model that also weighs asset criticality, internet
+  exposure, and threat intelligence, not just detection confidence and
+  repeat-offender activity (see `backend/app/detection/risk.py`'s
+  docstring for what the current model does and doesn't account for)

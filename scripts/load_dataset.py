@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Ingest the bundled NSL-KDD sample, run it through the full detection
 pipeline (rules + Isolation Forest), and report real precision/recall
-against the dataset's ground-truth labels.
+against the dataset's ground-truth labels -- on a held-out test split the
+Isolation Forest never saw during fitting.
 
 This is the evidence step: it proves the detection engine actually catches
 something, using real (if dated) labeled network intrusion data rather than
@@ -10,6 +11,17 @@ this script produces and docs/architecture.md for the honest caveats
 (NSL-KDD rows carry no source/destination IP, so IPs below are assigned
 round-robin from a small private-range pool purely to demonstrate the
 device-aggregation feature -- they are not part of the real dataset).
+
+Train/test split: earlier versions of this script fit the Isolation Forest
+on the full dataset and then evaluated it on that same data. That's a real
+evaluation-leakage bug -- the model never saw the ground-truth labels
+(it's unsupervised), but it did see the exact statistical distribution of
+every point it was later "tested" against, which inflates apparent anomaly
+detection performance. This version stratified-splits the dataset by label
+into a fit split and a held-out test split; the reported precision/recall
+below are computed only over the test split's predictions. Every row
+(train and test) is still ingested into the DB so the dashboard has data
+to show, but the metrics below never include a row the model was fit on.
 
 Usage:
     python scripts/load_dataset.py [--csv path] [--db sqlite:///./sentinelflow.db]
@@ -21,6 +33,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
 sys.path.insert(0, str(BACKEND_DIR))
@@ -70,23 +83,41 @@ def main():
     df = pd.read_csv(args.csv, names=NSL_KDD_COLUMNS)
     print(f"Loaded {len(df)} real NSL-KDD rows from {args.csv}")
 
-    feature_dicts = [row_to_features(row) for _, row in df.iterrows()]
+    # Stratified split by label so both splits cover the same attack
+    # categories in roughly the same proportion. A handful of labels in
+    # this sample have exactly one row (can't be stratified into two
+    # non-empty splits) -- those go into the fit split only, and are
+    # excluded from the test split and therefore from the reported metrics.
+    label_counts = df["label"].value_counts()
+    rare_labels = label_counts[label_counts < 2].index.tolist()
+    splittable = df[~df["label"].isin(rare_labels)]
+    rare_rows = df[df["label"].isin(rare_labels)]
+    if rare_labels:
+        print(f"Note: {len(rare_rows)} row(s) with singleton label(s) {rare_labels} "
+              f"go into the fit split only (can't be stratified).")
 
-    # Fit the Isolation Forest unsupervised, on the numeric features only --
-    # it never sees df["label"]. This mirrors how it would be fit on a batch
-    # of live traffic in production.
-    detection_state.fit(feature_dicts)
-    print(f"Fit Isolation Forest on {len(feature_dicts)} flows (contamination={detection_state.anomaly_detector.contamination})")
+    train_df, test_df = train_test_split(
+        splittable, test_size=0.4, random_state=42, stratify=splittable["label"],
+    )
+    train_df = pd.concat([train_df, rare_rows])
+    print(f"Split: {len(train_df)} rows to fit the Isolation Forest, "
+          f"{len(test_df)} held out for evaluation.")
+
+    train_features = [row_to_features(row) for _, row in train_df.iterrows()]
+
+    # Fit the Isolation Forest unsupervised, on the TRAIN split's numeric
+    # features only -- it never sees any label, and (as of this fix) it
+    # never sees the test split's feature distribution either.
+    detection_state.fit(train_features)
+    print(f"Fit Isolation Forest on {len(train_features)} flows (contamination={detection_state.anomaly_detector.contamination})")
 
     src_ips = itertools.cycle(SRC_IP_POOL)
     dst_ips = itertools.cycle(DST_IP_POOL)
 
-    db = SessionLocal()
-    tp = fp = tn = fn = 0
-    try:
-        for (_, row), features in zip(df.iterrows(), feature_dicts):
+    def ingest_split(db, split_df, *, is_test: bool):
+        nonlocal tp, fp, tn, fn
+        for _, row in split_df.iterrows():
             ground_truth_attack = row["label"] != "normal"
-
             event_in = {
                 "source_ip": next(src_ips),
                 "destination_ip": next(dst_ips),
@@ -97,12 +128,13 @@ def main():
                 "duration": float(row["duration"]),
                 "src_bytes": int(row["src_bytes"]),
                 "dst_bytes": int(row["dst_bytes"]),
-                "features": features,
+                "features": row_to_features(row),
                 "ground_truth_label": row["label"],
             }
             _event, alert = record_event(db, event_in)
+            if not is_test:
+                continue
             predicted_attack = alert is not None
-
             if predicted_attack and ground_truth_attack:
                 tp += 1
             elif predicted_attack and not ground_truth_attack:
@@ -111,16 +143,28 @@ def main():
                 fn += 1
             else:
                 tn += 1
+
+    db = SessionLocal()
+    tp = fp = tn = fn = 0
+    try:
+        # Ingest the fit split first (populates the DB/dashboard, no metrics
+        # counted), then the held-out test split (metrics counted here).
+        ingest_split(db, train_df, is_test=False)
+        ingest_split(db, test_df, is_test=True)
     finally:
         db.close()
 
     precision = tp / (tp + fp) if (tp + fp) else 0.0
     recall = tp / (tp + fn) if (tp + fn) else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
-    accuracy = (tp + tn) / len(df) if len(df) else 0.0
+    accuracy = (tp + tn) / len(test_df) if len(test_df) else 0.0
 
     report = {
-        "rows_evaluated": len(df),
+        "methodology": "stratified train/test split; Isolation Forest fit on train only, metrics computed on held-out test split only",
+        "rows_total": len(df),
+        "rows_fit_split": len(train_df),
+        "rows_test_split": len(test_df),
+        "rows_evaluated": len(test_df),
         "true_positives": tp,
         "false_positives": fp,
         "true_negatives": tn,
