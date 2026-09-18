@@ -91,12 +91,8 @@ async function fetchJSON(path) {
   return res.json();
 }
 
-// Every field rendered below ultimately originates from event data the API
-// accepted (source_ip, destination_ip, detection names, etc). The backend
-// validates source_ip/destination_ip as real IP addresses (see
-// backend/app/schemas.py), but the dashboard treats all API values as
-// untrusted on principle and escapes them before building HTML, rather
-// than relying solely on that upstream validation to hold forever.
+// Escape before inserting into innerHTML -- API values are treated as
+// untrusted here regardless of backend validation.
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",

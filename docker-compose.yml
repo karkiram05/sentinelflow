@@ -25,10 +25,7 @@ services:
     environment:
       DATABASE_URL: postgresql://sentinelflow:sentinelflow@db:5432/sentinelflow
     ports:
-      # Bound to loopback only: there's no authentication in front of the
-      # API yet, so this shouldn't be reachable from the LAN by default.
-      # (In GitHub Codespaces/devcontainers this is still forwarded to you
-      # correctly -- the forwarding proxy runs on the same host.)
+      # Loopback only -- no auth in front of the API yet.
       - "127.0.0.1:8000:8000"
 
 volumes:

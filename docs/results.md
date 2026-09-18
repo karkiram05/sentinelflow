@@ -28,15 +28,14 @@ computed from. (One label with a single row can't be stratified into two
 non-empty splits; that row goes into the fit split only and is excluded
 from both the test split and these metrics -- see the script's comments.)
 
-An earlier version of this evaluation fit the Isolation Forest on the full
-dataset and then evaluated it on that same data. That is evaluation
-leakage: the model never saw ground-truth labels (it's unsupervised), but
-it did see the exact statistical shape of every point it was later
-"tested" against, which can inflate apparent anomaly-detection performance.
-The numbers below are the corrected, held-out figures. In this case fixing
-the leakage barely moved the headline numbers, because most of what
-SentinelFlow catches comes from the deterministic rule engine (which has
-no notion of a training set at all, so nothing about it could leak) rather
+Fitting on the full dataset and evaluating on that same data would be
+evaluation leakage: the model never sees ground-truth labels (it's
+unsupervised), but it would see the exact statistical shape of every point
+it's later "tested" against, which can inflate apparent anomaly-detection
+performance. The held-out split avoids that. Note that the held-out numbers
+land close to what a full-dataset evaluation would show, because most of
+what SentinelFlow catches comes from the deterministic rule engine (which
+has no notion of a training set at all, so nothing about it could leak) rather
 than the Isolation Forest -- but the *methodology* is what makes that a
 verifiable claim rather than an assumption.
 

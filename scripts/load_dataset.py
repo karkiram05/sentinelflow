@@ -1,27 +1,12 @@
 #!/usr/bin/env python3
 """Ingest the bundled NSL-KDD sample, run it through the full detection
-pipeline (rules + Isolation Forest), and report real precision/recall
-against the dataset's ground-truth labels -- on a held-out test split the
-Isolation Forest never saw during fitting.
-
-This is the evidence step: it proves the detection engine actually catches
-something, using real (if dated) labeled network intrusion data rather than
-a self-generated traffic simulator. See docs/results.md for the numbers
-this script produces and docs/architecture.md for the honest caveats
-(NSL-KDD rows carry no source/destination IP, so IPs below are assigned
-round-robin from a small private-range pool purely to demonstrate the
-device-aggregation feature -- they are not part of the real dataset).
-
-Train/test split: earlier versions of this script fit the Isolation Forest
-on the full dataset and then evaluated it on that same data. That's a real
-evaluation-leakage bug -- the model never saw the ground-truth labels
-(it's unsupervised), but it did see the exact statistical distribution of
-every point it was later "tested" against, which inflates apparent anomaly
-detection performance. This version stratified-splits the dataset by label
-into a fit split and a held-out test split; the reported precision/recall
-below are computed only over the test split's predictions. Every row
-(train and test) is still ingested into the DB so the dashboard has data
-to show, but the metrics below never include a row the model was fit on.
+pipeline (rules + Isolation Forest), and report precision/recall against
+the dataset's ground-truth labels, computed on a held-out test split the
+Isolation Forest never saw during fitting. See docs/results.md for the
+numbers this produces and docs/architecture.md for caveats (NSL-KDD rows
+carry no source/destination IP, so IPs below are assigned round-robin from
+a small private-range pool purely to exercise device aggregation -- they
+aren't part of the real dataset).
 
 Usage:
     python scripts/load_dataset.py [--csv path] [--db sqlite:///./sentinelflow.db]
@@ -105,9 +90,8 @@ def main():
 
     train_features = [row_to_features(row) for _, row in train_df.iterrows()]
 
-    # Fit the Isolation Forest unsupervised, on the TRAIN split's numeric
-    # features only -- it never sees any label, and (as of this fix) it
-    # never sees the test split's feature distribution either.
+    # Fit unsupervised on the train split's numeric features only -- no
+    # labels, and no exposure to the test split's feature distribution.
     detection_state.fit(train_features)
     print(f"Fit Isolation Forest on {len(train_features)} flows (contamination={detection_state.anomaly_detector.contamination})")
 

@@ -8,14 +8,9 @@ from pydantic import BaseModel, ConfigDict, field_validator
 def _validate_ip(value: str) -> str:
     """Reject anything that isn't a real IPv4/IPv6 address.
 
-    This exists specifically so that source_ip/destination_ip can never
-    carry attacker-controlled markup through to the dashboard. Before this
-    validator, any string was accepted here and later interpolated into
-    the frontend's innerHTML (see frontend/index.html) -- a stored-XSS path
-    if a value resembling markup was submitted as an "IP". The frontend
-    now also escapes these fields itself (defense in depth), but rejecting
-    non-IP input at the boundary is the correct primary fix: a network
-    flow's address field is not supposed to be free text.
+    A network flow's address field isn't free text, and these values flow
+    straight through to the dashboard (frontend/index.html), so accepting
+    arbitrary strings here is an XSS vector, not just a data-quality issue.
     """
     try:
         ipaddress.ip_address(value)

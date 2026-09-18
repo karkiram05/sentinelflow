@@ -1,17 +1,10 @@
 """Risk scoring: combines rule confidence and ML anomaly confidence into a
 single 0-100 risk score and a severity band, using the weights in config.py.
 
-This is deliberately a modest, honestly-scoped model, not a claim of full
-"cybersecurity risk" (which would also weigh asset criticality, internet
-exposure, and threat intelligence -- none of which SentinelFlow has data
-for). Two signals it *does* have and does incorporate: detection confidence
-(rule + ML, blended) and how often the same source has already triggered
-an alert (repeat_offender_boost). A device that has already fired several
-alerts is more likely to represent an ongoing compromise than a first-time
-detection at the same confidence level, so repeat activity nudges the score
-up -- bounded, so it can't turn a low-confidence detection into a false
-CRITICAL on repetition alone. See docs/architecture.md's roadmap for what a
-fuller risk model (asset criticality, exposure, threat intel) would need.
+Two inputs feed the score: detection confidence (rule + ML, blended) and
+how often the same source has already triggered an alert. Asset
+criticality, exposure, and threat intel aren't modeled -- see
+docs/architecture.md's roadmap.
 """
 from app.config import settings
 
@@ -34,10 +27,7 @@ def risk_score(confidence: float) -> float:
 
 
 def repeat_offender_boost(prior_alert_count: int) -> float:
-    """A small, capped score boost for a source that has already triggered
-    other alerts. Not a substitute for real threat intelligence -- just
-    the one piece of "has this host misbehaved before" evidence the app
-    actually has on hand, applied conservatively."""
+    """Small, capped score boost for a source with prior alerts."""
     if prior_alert_count <= 0:
         return 0.0
     return min(REPEAT_BOOST_CAP, prior_alert_count * REPEAT_BOOST_PER_PRIOR_ALERT)
