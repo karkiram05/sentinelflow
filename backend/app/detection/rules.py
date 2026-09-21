@@ -42,7 +42,6 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
     hot = _get(features, "hot", 0)
     num_access_files = _get(features, "num_access_files", 0)
 
-    # --- Land attack: spoofed packet where source == destination ---
     if land == 1:
         matches.append(RuleMatch(
             detection="Land attack (spoofed src=dst)",
@@ -50,7 +49,6 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             rationale="land flag set (source and destination address/port identical)",
         ))
 
-    # --- Credential guessing / brute force ---
     if num_failed_logins >= 3:
         matches.append(RuleMatch(
             detection="Credential guessing (SNMP/FTP/service auth)",
@@ -67,11 +65,9 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             ),
         ))
 
-    # --- Port scanning: half-open/rejected/unreachable connections, no data ---
-    # S0 (no reply), REJ (rejected) and SH (SYN then host-unreachable, the
-    # classic half-open TCP scan flag) with zero payload bytes are strong
-    # single-flow scan signals on their own -- a real scan often shows exactly
-    # one such flow per probed port, so this doesn't require repeat count.
+    # S0/REJ/SH with zero payload is a strong scan signal on its own -- a
+    # real scan usually shows one such flow per probed port, no repeat
+    # count needed
     if flag in ("S0", "REJ", "SH") and src_bytes == 0 and dst_bytes == 0:
         matches.append(RuleMatch(
             detection="Port scanning",
@@ -79,7 +75,6 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             rationale=f"{count} connection(s) with flag={flag} and zero payload bytes",
         ))
 
-    # --- Network DoS pattern: high SYN-error rate at volume ---
     if serror_rate > 0.5 and count > 50:
         matches.append(RuleMatch(
             detection="Network denial-of-service pattern",
@@ -93,7 +88,6 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             rationale=f"same_srv_rate={same_srv_rate:.2f} with {count} connections (flood pattern)",
         ))
 
-    # --- Privilege escalation indicators ---
     if root_shell == 1 or num_root > 0 or su_attempted > 0:
         matches.append(RuleMatch(
             detection="Privilege escalation indicators",
@@ -101,7 +95,6 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             rationale="root shell / su / num_root activity observed on this flow",
         ))
 
-    # --- Suspicious remote command execution ---
     if num_shells > 0 or num_file_creations > 2 or num_access_files > 2:
         matches.append(RuleMatch(
             detection="Suspicious remote command execution",
@@ -112,16 +105,14 @@ def evaluate_rules(features: dict) -> list[RuleMatch]:
             ),
         ))
     elif hot >= 2:
-        # "hot" is NSL-KDD/KDD99's count of "hot" indicators (accessing system
-        # directories, creating/executing programs, etc.) on this connection --
-        # a documented feature, not something inferred from this sample's labels.
+        # "hot" is NSL-KDD's own feature: count of system-directory access /
+        # program creation indicators on this connection, not something we inferred
         matches.append(RuleMatch(
             detection="Suspicious remote command execution",
             confidence=0.55,
             rationale=f"hot={hot} system-access indicators on this connection",
         ))
 
-    # --- Unusual outbound data volume ---
     if dst_bytes > 500_000 and src_bytes < max(1, dst_bytes / 100):
         matches.append(RuleMatch(
             detection="Unusual outbound data volume",
