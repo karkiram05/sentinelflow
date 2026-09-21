@@ -1,5 +1,9 @@
 # SentinelFlow
 
+[![CI](https://github.com/karkiram05/sentinelflow/actions/workflows/ci.yml/badge.svg)](https://github.com/karkiram05/sentinelflow/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](backend/requirements.txt)
+
 A network/IoT threat-monitoring backend that ingests NSL-KDD-style
 engineered connection records, runs them through a rule + Isolation Forest
 detection engine, maps hits to MITRE ATT&CK, and scores risk — with a REST
