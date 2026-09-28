@@ -12,13 +12,13 @@ RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Runtime dependencies only (test/scan tools live in requirements-dev.txt).
-# setuptools and wheel come with the base image but the app never uses them
-# at runtime, so they are removed along with their vendored packages; pip
-# is upgraded rather than removed so the image can still be inspected.
+# pip, setuptools and wheel are only needed to install packages, and each
+# ships its own vendored libraries that image scanners flag (e.g. pip bundles
+# msgpack and pkg_resources from setuptools). None of them run at runtime,
+# so they are removed once the install is done.
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip uninstall -y setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip uninstall -y setuptools wheel pip
 
 COPY backend/app ./app
 COPY frontend /frontend
