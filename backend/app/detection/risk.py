@@ -13,12 +13,23 @@ REPEAT_BOOST_CAP = 15.0
 
 
 def combined_confidence(rule_confidence: float, ml_confidence: float, has_rule: bool, has_ml: bool) -> float:
+    """Confidence in [0, 1] for one event.
+
+    - Rule + ML: the ML hit corroborates the rule, so it can only raise
+      confidence, never lower it. It closes a fraction (ML_WEIGHT * ml) of
+      the remaining gap to 1.0. A plain weighted average used to drag a
+      0.95 rule hit down whenever the Isolation Forest agreed only weakly.
+    - Rule only: the rule's own confidence.
+    - ML only: an unsupervised outlier with no rule and no ATT&CK mapping is
+      a lead to investigate, not a confirmed attack, so it is scaled into
+      [0, ML_ONLY_MAX_CONFIDENCE] instead of being able to reach CRITICAL.
+    """
     if has_rule and has_ml:
-        return settings.RULE_WEIGHT * rule_confidence + settings.ML_WEIGHT * ml_confidence
+        return rule_confidence + settings.ML_WEIGHT * ml_confidence * (1.0 - rule_confidence)
     if has_rule:
         return rule_confidence
     if has_ml:
-        return ml_confidence
+        return ml_confidence * settings.ML_ONLY_MAX_CONFIDENCE
     return 0.0
 
 

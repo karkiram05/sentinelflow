@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip -q
-pip install -r backend/requirements.txt -q
+pip install -r backend/requirements-dev.txt -q
 
 echo ""
 echo "Seeding the database with the real NSL-KDD evaluation sample..."

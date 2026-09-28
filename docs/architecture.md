@@ -41,6 +41,12 @@ pipeline bolted on afterwards -- that's what makes `detection_source` in
 the Alert model meaningful ("rule", "ml", or "rule+ml": both agreeing on
 the same event raises its risk score, see `risk.py`).
 
+**ML-only alerts are capped at MEDIUM.** An Isolation Forest outlier with
+no rule behind it has no explanation and no ATT&CK mapping, so it is
+surfaced for triage but cannot outrank a rule hit. An earlier version let
+ML-only outliers score 100 and land as CRITICAL, which pushed most of the
+alert queue into the top band.
+
 **Flow-level, not packet-level.** SentinelFlow ingests aggregated
 connection/flow records (the same shape Zeek's `conn.log` or a NetFlow
 collector produces), not raw packets. This keeps the ingestion API simple
@@ -93,7 +99,9 @@ makes it usable against live traffic where you don't have labels.
   include real source/destination IPs. `scripts/load_dataset.py` assigns
   them round-robin from a small private-range pool purely so the
   device-aggregation feature has something to group by. This is disclosed
-  in that script's docstring, not left implicit.
+  in that script's docstring, not left implicit. For the same reason the
+  script turns off the repeat-offender risk boost: with round-robin IPs,
+  "prior alerts from this source" would only reflect the IP pool.
 - **Categorical features (protocol/service/flag) aren't fed to the ML
   model**, only to the rules. Encoding them for the Isolation Forest too is
   a reasonable next step.
