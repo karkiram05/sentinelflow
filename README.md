@@ -6,7 +6,7 @@
 
 A network/IoT threat-monitoring backend that ingests NSL-KDD-style
 engineered connection records, runs them through a rule + Isolation Forest
-detection engine, maps hits to MITRE ATT&CK, and scores risk — with a REST
+detection engine, maps hits to MITRE ATT&CK, and scores risk, with a REST
 API, a live dashboard, and a real held-out evaluation against labeled
 attack data (not a self-generated traffic demo). See "A note on the input
 format" in `docs/results.md` for exactly what `POST /events` expects and
@@ -19,12 +19,13 @@ NSL-KDD-style event → POST /events → [rules + Isolation Forest] → MITRE ma
 
 ## Why this exists
 
-Built on the intersection of two years running production IoT device
-telemetry at NorthQ (2,244 devices, 31M+ feature rows, anomaly detection
-with rule-based thresholds) and a cybersecurity MSc. Rather than another
+Informed by my security automation internship at NorthQ, where I built
+anomaly detection (Isolation Forest plus rule-based thresholds) over
+production telemetry from 2,244 IoT devices (31M+ feature rows), and by my
+cybersecurity MSc. Rather than another
 notebook classifying a public dataset, this is a small working system: an
-API, a database, tests, CI with security scanning, and — the part most
-portfolio projects skip — an honest report of what the detection engine
+API, a database, tests, CI with security scanning, and (the part most
+portfolio projects skip) an honest report of what the detection engine
 actually catches and misses. See `docs/results.md`.
 
 ## What's here (and what isn't, on purpose)
@@ -32,18 +33,18 @@ actually catches and misses. See `docs/results.md`.
 | | |
 |---|---|
 | ✅ | FastAPI REST backend (`/events`, `/alerts`, `/devices`, `/statistics`) |
-| ✅ | Rule engine — explainable, auditable thresholds (`backend/app/detection/rules.py`) |
+| ✅ | Rule engine: explainable, auditable thresholds (`backend/app/detection/rules.py`) |
 | ✅ | Isolation Forest anomaly detector, fit unsupervised on real traffic features |
 | ✅ | MITRE ATT&CK mapping for every detection type that has one |
-| ✅ | Risk scoring (0-100) blending rule + ML confidence into a severity band |
+| ✅ | Risk scoring (0-100) and severity bands: rule hits drive severity, ML corroboration raises it, ML-only outliers are capped at MEDIUM |
 | ✅ | PostgreSQL (Docker) / SQLite (local dev) via SQLAlchemy |
-| ✅ | Live dashboard — single-file HTML, polls the API |
+| ✅ | Live dashboard: single-file HTML, polls the API |
 | ✅ | Evaluated against a real labeled dataset (NSL-KDD), with a full per-attack-category breakdown, not a headline number |
-| ✅ | 33 pytest tests covering rules, ML, risk scoring, and the API |
-| ✅ | GitHub Actions CI: tests + Bandit + pip-audit; Dependabot for dependency updates |
+| ✅ | 43 pytest tests covering rules, ML, risk scoring, and the API |
+| ✅ | GitHub Actions CI: tests + Bandit + pip-audit + Trivy scan of the built Docker image; Dependabot for dependency updates |
 | ✅ | Docker Compose (API + Postgres) |
 | ✅ | Threat model (STRIDE) of the application itself, not just the traffic it watches |
-| ⛔ | Live packet/PCAP capture (Zeek/Suricata), threat-intel enrichment, Grafana/Prometheus, cloud deployment — cut from this version deliberately rather than left half-built; see the Roadmap in `docs/architecture.md` |
+| ⛔ | Live packet/PCAP capture (Zeek/Suricata), threat-intel enrichment, Grafana/Prometheus, cloud deployment. Cut from this version deliberately rather than left half-built; see the Roadmap in `docs/architecture.md` |
 
 ## Try it with zero local setup (GitHub Codespaces)
 
@@ -80,30 +81,39 @@ for interactive API docs.
 docker compose up --build
 ```
 
-This starts the API against Postgres with an empty database — POST to
-`/events` (see `docs/api.md`) or point `DATABASE_URL` at the same Postgres
-instance and run `scripts/load_dataset.py` from the host to seed it with
-the real evaluation dataset.
+This starts the API against Postgres with an empty database. POST to
+`/events` (see `docs/api.md`), or seed it with the real evaluation dataset
+from the host:
+
+```bash
+DATABASE_URL=postgresql://sentinelflow:sentinelflow@localhost:5432/sentinelflow \
+  python scripts/load_dataset.py --reset-db
+```
 
 ### Run the tests
 
 ```bash
+pip install -r backend/requirements-dev.txt
 cd backend && python -m pytest tests/ -v
 ```
 
 ## Detection results
 
-Precision **96.2%**, recall **46.9%** on a held-out test split of a real
-labeled dataset (the Isolation Forest never sees the test split during
-fitting) — plus a full table of exactly which attack types are caught and
-which aren't, why the precision number is sample-dependent and not a
-production estimate, and what a real deployment's input format would need
-to look like. See **[docs/results.md](docs/results.md)**.
+On a held-out test split of real labeled NSL-KDD data (the Isolation Forest
+never sees it during fitting), SentinelFlow catches **46.9% of attacks**
+(229 of 488) and flags **9 of 24 normal flows (37.5% false positive rate)**.
+Precision is 96.2%, but the split is 95% attack traffic, so alerting on
+every flow would already score 95.3%: precision is not a meaningful headline
+here. Detection is strong on scans and single-flow exploits and near zero
+on slow, multi-flow attacks that need cross-flow correlation.
+**[docs/results.md](docs/results.md)** has the per-attack-type table, the
+severity distribution, and what a real deployment's input format would need
+to look like.
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) — design decisions, module map, limitations, roadmap
-- [Threat model](docs/threat-model.md) — STRIDE analysis of SentinelFlow itself
+- [Architecture](docs/architecture.md): design decisions, module map, limitations, roadmap
+- [Threat model](docs/threat-model.md): STRIDE analysis of SentinelFlow itself
 - [API reference](docs/api.md)
 - [Detection results](docs/results.md)
 
@@ -115,4 +125,4 @@ Dependabot.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
