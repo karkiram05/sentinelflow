@@ -22,7 +22,9 @@ def get_or_create_device(db: Session, ip_address: str) -> models.Device:
     return device
 
 
-def record_event(db: Session, event_in: dict) -> tuple[models.Event, models.Alert | None]:
+def record_event(
+    db: Session, event_in: dict, *, apply_repeat_boost: bool = True
+) -> tuple[models.Event, models.Alert | None]:
     source_ip = event_in["source_ip"]
     destination_ip = event_in["destination_ip"]
 
@@ -54,7 +56,11 @@ def record_event(db: Session, event_in: dict) -> tuple[models.Event, models.Aler
         # alert_count at this point is the number of PRIOR alerts from this
         # source (it's incremented below, after this read) -- that's the
         # repeat-offender signal risk.apply_repeat_offender_boost wants.
-        boosted_score = risk.apply_repeat_offender_boost(result.risk_score, src_device.alert_count)
+        # scripts/load_dataset.py turns this off: its source IPs are assigned
+        # round-robin, so "prior alerts from this source" would be an artifact
+        # of the IP pool, not real repeat behaviour.
+        prior_alerts = src_device.alert_count if apply_repeat_boost else 0
+        boosted_score = risk.apply_repeat_offender_boost(result.risk_score, prior_alerts)
         severity = risk.severity_band(boosted_score)
 
         alert = models.Alert(
