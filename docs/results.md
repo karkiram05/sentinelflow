@@ -15,7 +15,7 @@ normal traffic).
 Reproduce with:
 
 ```bash
-pip install -r backend/requirements.txt
+pip install -r backend/requirements-dev.txt
 python scripts/load_dataset.py --reset-db
 ```
 
@@ -44,17 +44,30 @@ verifiable claim rather than an assumption.
 | Metric | Value |
 |---|---|
 | Rows in sample | 1,279 (767 fit split, 512 held-out test split) |
-| Precision (test split) | **96.2%** |
-| Recall (test split) | **46.9%** |
+| Test split make-up | 488 attack rows, 24 normal rows |
+| Recall / detection rate (test split) | **46.9%** (229 of 488 attacks caught) |
+| False positive rate on normal traffic | **37.5%** (9 of 24 normal flows flagged) |
+| Precision (test split) | 96.2% |
+| Precision of "alert on every flow" on the same split | 95.3% |
 | F1 score | 0.63 |
 | True positives / False positives | 229 / 9 |
 | False negatives / True negatives | 259 / 15 |
+| Test-split alerts by severity | 87 CRITICAL, 38 HIGH, 113 MEDIUM, 0 LOW |
 
 *(Regenerate `docs/evaluation_report.json` by rerunning
 `python scripts/load_dataset.py --reset-db` -- these numbers are not
 hand-edited.)*
 
 ## Reading these numbers honestly
+
+**Precision is not the number to judge this detector by.** On this split a
+detector that alerts on every single flow would already score 95.3%
+precision, so 96.2% is less than one point of real lift. The numbers that
+matter here are recall per attack type (below) and the false positive rate
+on normal traffic: 9 of 24 normal flows were flagged (37.5%). That rate is
+far too high for a real SOC queue, and 24 normal rows is also too few to
+measure it precisely. Evaluating on a split with thousands of normal flows
+is the first thing to fix before quoting any false positive figure.
 
 **96.2% precision is a property of this evaluation sample, not a
 production guarantee.** This sample's test split is roughly 95% attack
@@ -119,6 +132,27 @@ counted correctly in the headline TP/FP/TN/FN above):
 
 Of the 24 `normal` (non-attack) rows in the test split, 9 were flagged --
 these 9 are exactly the 9 false positives in the headline numbers above.
+
+## Severity distribution
+
+Detection (alert or no alert) and severity are separate steps, so the
+changes below leave every precision/recall figure above unchanged; they
+only change how alerts are ranked. Across all 594 alerts in the seeded
+database:
+
+| | CRITICAL | HIGH | MEDIUM |
+|---|---|---|---|
+| Before | 341 (57%) | 236 | 17 |
+| After | 215 (36%) | 96 | 283 |
+
+Two things drove the old skew. ML-only outliers could score 100 and land
+as CRITICAL with no rule or ATT&CK technique behind them; they are now
+capped at MEDIUM. And the repeat-offender boost was counting "prior
+alerts" from source IPs that `load_dataset.py` assigns round-robin, which
+inflated nearly every score by up to 15 points; the loader now turns that
+boost off. A rule hit that the Isolation Forest also flags now always
+scores at least as high as the rule alone (the old weighted average could
+pull it down).
 
 ## Why this table belongs in a portfolio project
 
