@@ -4,12 +4,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev \
+# Pick up Debian security fixes released since the base image was built.
+# No compiler or libpq headers are installed: psycopg2-binary ships a
+# prebuilt wheel, and build tools in a runtime image are only extra attack
+# surface.
+RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
+# Runtime dependencies only (test/scan tools live in requirements-dev.txt).
+# setuptools and wheel come with the base image but the app never uses them
+# at runtime, so they are removed along with their vendored packages; pip
+# is upgraded rather than removed so the image can still be inspected.
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip uninstall -y setuptools wheel
 
 COPY backend/app ./app
 COPY frontend /frontend
