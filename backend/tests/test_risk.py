@@ -11,17 +11,32 @@ def test_combined_confidence_rule_only():
     assert combined_confidence(0.8, 0.0, has_rule=True, has_ml=False) == 0.8
 
 
-def test_combined_confidence_ml_only():
-    assert combined_confidence(0.0, 0.5, has_rule=False, has_ml=True) == 0.5
+def test_combined_confidence_ml_only_is_scaled_down():
+    assert combined_confidence(0.0, 0.5, has_rule=False, has_ml=True) == 0.5 * 0.55
+
+
+def test_ml_only_alert_cannot_reach_high_or_critical():
+    score = risk_score(combined_confidence(0.0, 1.0, has_rule=False, has_ml=True))
+    assert severity_band(score) == "MEDIUM"
 
 
 def test_combined_confidence_neither():
     assert combined_confidence(0.0, 0.0, has_rule=False, has_ml=False) == 0.0
 
 
-def test_combined_confidence_weighted_blend():
-    result = combined_confidence(1.0, 1.0, has_rule=True, has_ml=True)
-    assert result == 1.0  # weights sum to 1.0 by default
+def test_combined_confidence_rule_and_ml_saturates_at_one():
+    assert combined_confidence(1.0, 1.0, has_rule=True, has_ml=True) == 1.0
+
+
+def test_ml_corroboration_never_lowers_rule_confidence():
+    for rule_conf in (0.5, 0.8, 0.95):
+        for ml_conf in (0.0, 0.1, 0.5, 1.0):
+            combined = combined_confidence(rule_conf, ml_conf, has_rule=True, has_ml=True)
+            assert rule_conf <= combined <= 1.0
+
+
+def test_ml_corroboration_raises_confidence():
+    assert combined_confidence(0.6, 1.0, has_rule=True, has_ml=True) > 0.6
 
 
 def test_risk_score_scales_to_100():
