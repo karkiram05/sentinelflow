@@ -8,12 +8,20 @@ carry no source/destination IP, so IPs below are assigned round-robin from
 a small private-range pool purely to exercise device aggregation -- they
 aren't part of the real dataset).
 
+The repeat-offender risk boost is switched off here for the same reason:
+with round-robin IPs, "prior alerts from this source" would just reflect
+the IP pool, not real repeat behaviour.
+
 Usage:
-    python scripts/load_dataset.py [--csv path] [--db sqlite:///./sentinelflow.db]
+    python scripts/load_dataset.py [--csv path] [--reset-db]
+
+Set DATABASE_URL to seed a different database (e.g. the Docker Compose
+Postgres instance); by default it uses the same SQLite file as the API.
 """
 import argparse
 import itertools
 import json
+from collections import Counter
 import sys
 from pathlib import Path
 
@@ -99,7 +107,7 @@ def main():
     dst_ips = itertools.cycle(DST_IP_POOL)
 
     def ingest_split(db, split_df, *, is_test: bool):
-        nonlocal tp, fp, tn, fn
+        nonlocal tp, fp, tn, fn, severity_counts
         for _, row in split_df.iterrows():
             ground_truth_attack = row["label"] != "normal"
             event_in = {
@@ -115,9 +123,11 @@ def main():
                 "features": row_to_features(row),
                 "ground_truth_label": row["label"],
             }
-            _event, alert = record_event(db, event_in)
+            _event, alert = record_event(db, event_in, apply_repeat_boost=False)
             if not is_test:
                 continue
+            if alert is not None:
+                severity_counts[alert.severity] += 1
             predicted_attack = alert is not None
             if predicted_attack and ground_truth_attack:
                 tp += 1
@@ -130,6 +140,7 @@ def main():
 
     db = SessionLocal()
     tp = fp = tn = fn = 0
+    severity_counts = Counter()
     try:
         # Ingest the fit split first (populates the DB/dashboard, no metrics
         # counted), then the held-out test split (metrics counted here).
@@ -142,6 +153,13 @@ def main():
     recall = tp / (tp + fn) if (tp + fn) else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
     accuracy = (tp + tn) / len(test_df) if len(test_df) else 0.0
+    normal_rows = tn + fp
+    attack_rows = tp + fn
+    false_positive_rate = fp / normal_rows if normal_rows else 0.0
+    # What precision a detector that alerts on every single flow would get on
+    # this split. On an attack-heavy sample this is already very high, so
+    # headline precision has to be read against it.
+    baseline_precision_alert_on_everything = attack_rows / len(test_df) if len(test_df) else 0.0
 
     report = {
         "methodology": "stratified train/test split; Isolation Forest fit on train only, metrics computed on held-out test split only",
@@ -157,6 +175,13 @@ def main():
         "recall": round(recall, 4),
         "f1_score": round(f1, 4),
         "accuracy": round(accuracy, 4),
+        "test_split_attack_rows": attack_rows,
+        "test_split_normal_rows": normal_rows,
+        "false_positive_rate": round(false_positive_rate, 4),
+        "baseline_precision_alert_on_everything": round(baseline_precision_alert_on_everything, 4),
+        "test_split_alerts_by_severity": {
+            band: severity_counts.get(band, 0) for band in ("CRITICAL", "HIGH", "MEDIUM", "LOW")
+        },
     }
     print(json.dumps(report, indent=2))
 
