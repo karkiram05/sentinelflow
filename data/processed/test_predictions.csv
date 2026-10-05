@@ -1,0 +1,513 @@
+row_id,label,attack_category,difficulty,is_attack,alerted,outcome,detection,detection_source,mitre_technique,confidence,risk_score,severity
+4,portsweep,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.75,75.0,HIGH
+6,smurf,DoS,18,1,0,FN,,,,,,
+7,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+8,processtable,DoS,18,1,0,FN,,,,,,
+11,mscan,Probe,14,1,1,TP,Port scanning,rule+ml,T1046,0.754,75.4,HIGH
+12,back,DoS,15,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+14,ipsweep,Probe,16,1,0,FN,,,,,,
+16,httptunnel,U2R,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+18,httptunnel,U2R,20,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+20,smurf,DoS,19,1,0,FN,,,,,,
+22,guess_passwd,R2L,17,1,0,FN,,,,,,
+24,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+30,guess_passwd,R2L,10,1,0,FN,,,,,,
+31,smurf,DoS,20,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+33,buffer_overflow,U2R,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+34,ipsweep,Probe,15,1,0,FN,,,,,,
+35,snmpguess,R2L,17,1,0,FN,,,,,,
+36,apache2,DoS,15,1,0,FN,,,,,,
+37,httptunnel,U2R,17,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+40,mscan,Probe,15,1,1,TP,Port scanning,rule+ml,T1046,0.764,76.4,HIGH
+41,multihop,R2L,0,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+42,processtable,DoS,14,1,0,FN,,,,,,
+43,apache2,DoS,14,1,1,TP,Statistical traffic anomaly,ml,,0.532,53.2,MEDIUM
+45,smurf,DoS,20,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+46,ipsweep,Probe,18,1,0,FN,,,,,,
+47,apache2,DoS,17,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+48,snmpguess,R2L,15,1,0,FN,,,,,,
+50,saint,Probe,15,1,0,FN,,,,,,
+51,processtable,DoS,18,1,0,FN,,,,,,
+55,neptune,DoS,18,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+57,snmpguess,R2L,17,1,0,FN,,,,,,
+59,snmpgetattack,R2L,0,1,0,FN,,,,,,
+63,snmpguess,R2L,16,1,0,FN,,,,,,
+64,normal,normal,20,0,0,TN,,,,,,
+67,named,R2L,3,1,0,FN,,,,,,
+71,httptunnel,U2R,5,1,0,FN,,,,,,
+75,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+81,httptunnel,U2R,10,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+82,mailbomb,DoS,15,1,0,FN,,,,,,
+83,processtable,DoS,19,1,0,FN,,,,,,
+84,mailbomb,DoS,15,1,0,FN,,,,,,
+85,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+86,xterm,U2R,0,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+87,neptune,DoS,18,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+91,ipsweep,Probe,16,1,0,FN,,,,,,
+94,snmpgetattack,R2L,0,1,0,FN,,,,,,
+101,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+103,snmpguess,R2L,14,1,0,FN,,,,,,
+104,apache2,DoS,12,1,0,FN,,,,,,
+106,neptune,DoS,20,1,0,FN,,,,,,
+108,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+109,saint,Probe,0,1,0,FN,,,,,,
+114,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+116,satan,Probe,19,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+120,multihop,R2L,0,1,0,FN,,,,,,
+122,mailbomb,DoS,13,1,0,FN,,,,,,
+124,xlock,R2L,4,1,0,FN,,,,,,
+126,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+128,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+132,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+133,snmpguess,R2L,16,1,0,FN,,,,,,
+135,smurf,DoS,19,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+137,apache2,DoS,15,1,0,FN,,,,,,
+141,back,DoS,11,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+144,named,R2L,3,1,1,TP,Statistical traffic anomaly,ml,,0.537,53.7,MEDIUM
+145,ipsweep,Probe,16,1,0,FN,,,,,,
+148,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+151,back,DoS,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+152,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+153,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+155,xterm,U2R,1,1,0,FN,,,,,,
+156,multihop,R2L,4,1,0,FN,,,,,,
+159,smurf,DoS,20,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+162,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+163,teardrop,DoS,11,1,0,FN,,,,,,
+171,guess_passwd,R2L,7,1,0,FN,,,,,,
+172,mscan,Probe,15,1,1,TP,Port scanning,rule+ml,T1046,0.79,79.0,HIGH
+173,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+174,portsweep,Probe,15,1,0,FN,,,,,,
+176,normal,normal,1,0,0,TN,,,,,,
+177,guess_passwd,R2L,13,1,0,FN,,,,,,
+179,ipsweep,Probe,17,1,0,FN,,,,,,
+181,httptunnel,U2R,11,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+183,warezmaster,R2L,15,1,0,FN,,,,,,
+186,apache2,DoS,14,1,0,FN,,,,,,
+193,snmpguess,R2L,17,1,0,FN,,,,,,
+195,snmpguess,R2L,16,1,0,FN,,,,,,
+196,normal,normal,20,0,0,TN,,,,,,
+197,normal,normal,20,0,1,FP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+198,processtable,DoS,18,1,0,FN,,,,,,
+202,warezmaster,R2L,15,1,0,FN,,,,,,
+204,teardrop,DoS,14,1,0,FN,,,,,,
+207,portsweep,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.749,74.9,HIGH
+208,portsweep,Probe,14,1,0,FN,,,,,,
+211,saint,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+215,ipsweep,Probe,16,1,0,FN,,,,,,
+217,mscan,Probe,14,1,1,TP,Port scanning,rule+ml,T1046,0.778,77.8,HIGH
+221,httptunnel,U2R,17,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+227,xsnoop,R2L,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+229,teardrop,DoS,18,1,0,FN,,,,,,
+233,neptune,DoS,19,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+234,pod,DoS,7,1,0,FN,,,,,,
+237,processtable,DoS,14,1,0,FN,,,,,,
+239,ps,U2R,5,1,0,FN,,,,,,
+242,guess_passwd,R2L,18,1,0,FN,,,,,,
+247,land,DoS,19,1,1,TP,Land attack (spoofed src=dst),rule+ml,T1498,0.97,97.0,CRITICAL
+248,normal,normal,14,0,0,TN,,,,,,
+249,satan,Probe,20,1,0,FN,,,,,,
+250,sqlattack,U2R,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+253,perl,U2R,1,1,1,TP,Suspicious remote command execution,rule+ml,T1059,0.755,75.5,HIGH
+254,buffer_overflow,U2R,0,1,1,TP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+259,processtable,DoS,17,1,0,FN,,,,,,
+261,satan,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+266,warezmaster,R2L,7,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+270,smurf,DoS,17,1,0,FN,,,,,,
+272,guess_passwd,R2L,7,1,0,FN,,,,,,
+274,mscan,Probe,13,1,1,TP,Statistical traffic anomaly,ml,,0.549,54.9,MEDIUM
+279,mailbomb,DoS,14,1,0,FN,,,,,,
+282,mscan,Probe,15,1,1,TP,Port scanning,rule+ml,T1046,0.778,77.8,HIGH
+284,mscan,Probe,14,1,0,FN,,,,,,
+286,satan,Probe,19,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+287,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+288,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+291,sendmail,R2L,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.908,90.8,CRITICAL
+294,ipsweep,Probe,18,1,0,FN,,,,,,
+296,saint,Probe,15,1,0,FN,,,,,,
+298,satan,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+300,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+301,warezmaster,R2L,8,1,0,FN,,,,,,
+303,normal,normal,18,0,0,TN,,,,,,
+308,ipsweep,Probe,18,1,0,FN,,,,,,
+311,mailbomb,DoS,12,1,0,FN,,,,,,
+314,processtable,DoS,18,1,0,FN,,,,,,
+317,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+319,mailbomb,DoS,11,1,0,FN,,,,,,
+322,mscan,Probe,11,1,1,TP,Statistical traffic anomaly,ml,,0.539,53.9,MEDIUM
+323,snmpgetattack,R2L,3,1,0,FN,,,,,,
+324,processtable,DoS,17,1,0,FN,,,,,,
+326,back,DoS,13,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+328,pod,DoS,15,1,0,FN,,,,,,
+332,httptunnel,U2R,11,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+337,loadmodule,U2R,3,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+338,buffer_overflow,U2R,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+339,ipsweep,Probe,18,1,0,FN,,,,,,
+340,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+345,named,R2L,5,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+353,snmpgetattack,R2L,0,1,0,FN,,,,,,
+354,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+358,warezmaster,R2L,5,1,0,FN,,,,,,
+365,normal,normal,18,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+367,warezmaster,R2L,15,1,0,FN,,,,,,
+369,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+375,apache2,DoS,14,1,0,FN,,,,,,
+376,apache2,DoS,18,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+377,httptunnel,U2R,16,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+379,buffer_overflow,U2R,3,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+380,ipsweep,Probe,15,1,0,FN,,,,,,
+386,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+388,back,DoS,15,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+390,snmpgetattack,R2L,4,1,0,FN,,,,,,
+391,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+392,satan,Probe,18,1,0,FN,,,,,,
+393,ps,U2R,1,1,0,FN,,,,,,
+395,nmap,Probe,19,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+396,satan,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+399,ipsweep,Probe,15,1,0,FN,,,,,,
+401,snmpgetattack,R2L,0,1,0,FN,,,,,,
+402,apache2,DoS,14,1,0,FN,,,,,,
+403,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+404,portsweep,Probe,18,1,0,FN,,,,,,
+406,nmap,Probe,19,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+407,satan,Probe,14,1,0,FN,,,,,,
+410,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+411,mscan,Probe,16,1,1,TP,Port scanning,rule,T1046,0.63,63.0,HIGH
+413,pod,DoS,14,1,0,FN,,,,,,
+415,portsweep,Probe,16,1,0,FN,,,,,,
+416,neptune,DoS,18,1,0,FN,,,,,,
+419,back,DoS,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+427,saint,Probe,15,1,0,FN,,,,,,
+430,pod,DoS,14,1,1,TP,Statistical traffic anomaly,ml,,0.539,53.9,MEDIUM
+432,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+436,mscan,Probe,16,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+438,snmpgetattack,R2L,3,1,0,FN,,,,,,
+442,httptunnel,U2R,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+446,apache2,DoS,18,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+447,mailbomb,DoS,11,1,0,FN,,,,,,
+453,satan,Probe,17,1,0,FN,,,,,,
+456,apache2,DoS,12,1,0,FN,,,,,,
+458,named,R2L,5,1,0,FN,,,,,,
+460,saint,Probe,19,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+461,nmap,Probe,17,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+463,ps,U2R,7,1,0,FN,,,,,,
+466,snmpguess,R2L,17,1,0,FN,,,,,,
+467,normal,normal,7,0,0,TN,,,,,,
+468,httptunnel,U2R,5,1,0,FN,,,,,,
+473,apache2,DoS,15,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+476,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+477,apache2,DoS,16,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+478,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+483,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+485,mscan,Probe,5,1,0,FN,,,,,,
+486,pod,DoS,14,1,0,FN,,,,,,
+487,rootkit,U2R,0,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+491,smurf,DoS,18,1,0,FN,,,,,,
+492,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+497,land,DoS,11,1,1,TP,Land attack (spoofed src=dst),rule,T1498,0.95,95.0,CRITICAL
+499,xlock,R2L,4,1,0,FN,,,,,,
+500,ipsweep,Probe,15,1,0,FN,,,,,,
+501,pod,DoS,16,1,0,FN,,,,,,
+506,snmpgetattack,R2L,0,1,0,FN,,,,,,
+507,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+509,back,DoS,13,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+510,mscan,Probe,9,1,1,TP,Statistical traffic anomaly,ml,,0.54,54.0,MEDIUM
+513,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+515,ipsweep,Probe,16,1,0,FN,,,,,,
+518,nmap,Probe,19,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+520,back,DoS,11,1,0,FN,,,,,,
+522,phf,R2L,0,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+523,httptunnel,U2R,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+525,satan,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+526,ps,U2R,4,1,0,FN,,,,,,
+528,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+531,buffer_overflow,U2R,0,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+533,back,DoS,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+542,mailbomb,DoS,13,1,0,FN,,,,,,
+543,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+545,pod,DoS,15,1,0,FN,,,,,,
+547,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+550,snmpguess,R2L,16,1,0,FN,,,,,,
+551,ipsweep,Probe,18,1,0,FN,,,,,,
+553,mailbomb,DoS,14,1,0,FN,,,,,,
+561,saint,Probe,15,1,0,FN,,,,,,
+563,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+565,saint,Probe,19,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+567,saint,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+574,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+578,portsweep,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+579,ps,U2R,13,1,0,FN,,,,,,
+580,mscan,Probe,12,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+581,snmpgetattack,R2L,0,1,0,FN,,,,,,
+582,warezmaster,R2L,13,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+588,normal,normal,6,0,0,TN,,,,,,
+589,snmpguess,R2L,16,1,0,FN,,,,,,
+591,ipsweep,Probe,17,1,0,FN,,,,,,
+592,snmpguess,R2L,16,1,0,FN,,,,,,
+595,guess_passwd,R2L,17,1,0,FN,,,,,,
+596,warezmaster,R2L,11,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+597,mailbomb,DoS,11,1,0,FN,,,,,,
+600,httptunnel,U2R,8,1,0,FN,,,,,,
+601,warezmaster,R2L,6,1,0,FN,,,,,,
+602,apache2,DoS,18,1,1,TP,Statistical traffic anomaly,ml,,0.537,53.7,MEDIUM
+606,mailbomb,DoS,18,1,0,FN,,,,,,
+607,pod,DoS,15,1,1,TP,Statistical traffic anomaly,ml,,0.55,55.0,MEDIUM
+609,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+611,teardrop,DoS,11,1,0,FN,,,,,,
+614,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+615,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+616,guess_passwd,R2L,18,1,0,FN,,,,,,
+621,apache2,DoS,14,1,0,FN,,,,,,
+626,snmpgetattack,R2L,7,1,0,FN,,,,,,
+628,httptunnel,U2R,20,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+629,sendmail,R2L,0,1,1,TP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+632,pod,DoS,16,1,0,FN,,,,,,
+634,neptune,DoS,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+635,satan,Probe,19,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+641,httptunnel,U2R,0,1,0,FN,,,,,,
+647,smurf,DoS,17,1,0,FN,,,,,,
+649,normal,normal,8,0,0,TN,,,,,,
+650,buffer_overflow,U2R,6,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.909,90.9,CRITICAL
+652,mscan,Probe,9,1,1,TP,Statistical traffic anomaly,ml,,0.545,54.5,MEDIUM
+653,processtable,DoS,18,1,0,FN,,,,,,
+657,portsweep,Probe,19,1,0,FN,,,,,,
+658,mailbomb,DoS,11,1,0,FN,,,,,,
+661,mailbomb,DoS,11,1,0,FN,,,,,,
+665,saint,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+667,rootkit,U2R,7,1,0,FN,,,,,,
+671,buffer_overflow,U2R,1,1,0,FN,,,,,,
+672,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+673,neptune,DoS,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+676,guess_passwd,R2L,16,1,0,FN,,,,,,
+677,portsweep,Probe,15,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+678,mscan,Probe,13,1,1,TP,Statistical traffic anomaly,ml,,0.55,55.0,MEDIUM
+679,httptunnel,U2R,12,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+685,warezmaster,R2L,15,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+686,saint,Probe,15,1,0,FN,,,,,,
+687,neptune,DoS,18,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+688,portsweep,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.749,74.9,HIGH
+691,udpstorm,DoS,17,1,0,FN,,,,,,
+692,mailbomb,DoS,11,1,0,FN,,,,,,
+695,apache2,DoS,17,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+696,neptune,DoS,19,1,0,FN,,,,,,
+700,guess_passwd,R2L,16,1,0,FN,,,,,,
+703,guess_passwd,R2L,15,1,0,FN,,,,,,
+705,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+706,processtable,DoS,15,1,0,FN,,,,,,
+707,neptune,DoS,20,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+710,nmap,Probe,19,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+712,httptunnel,U2R,16,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+714,guess_passwd,R2L,11,1,0,FN,,,,,,
+718,smurf,DoS,18,1,0,FN,,,,,,
+721,pod,DoS,16,1,0,FN,,,,,,
+723,satan,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+724,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+727,warezmaster,R2L,15,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+729,multihop,R2L,9,1,0,FN,,,,,,
+731,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+733,rootkit,U2R,5,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+734,snmpgetattack,R2L,0,1,0,FN,,,,,,
+736,snmpguess,R2L,12,1,0,FN,,,,,,
+745,mscan,Probe,14,1,1,TP,Statistical traffic anomaly,ml,,0.545,54.5,MEDIUM
+746,mscan,Probe,13,1,1,TP,Statistical traffic anomaly,ml,,0.543,54.3,MEDIUM
+748,guess_passwd,R2L,13,1,0,FN,,,,,,
+749,apache2,DoS,14,1,0,FN,,,,,,
+750,snmpguess,R2L,16,1,0,FN,,,,,,
+752,satan,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+753,processtable,DoS,18,1,0,FN,,,,,,
+756,ipsweep,Probe,8,1,0,FN,,,,,,
+758,ipsweep,Probe,18,1,0,FN,,,,,,
+763,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+764,satan,Probe,18,1,0,FN,,,,,,
+765,sendmail,R2L,0,1,1,TP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+767,snmpgetattack,R2L,7,1,0,FN,,,,,,
+769,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+771,portsweep,Probe,17,1,0,FN,,,,,,
+772,guess_passwd,R2L,7,1,0,FN,,,,,,
+773,multihop,R2L,0,1,0,FN,,,,,,
+780,mailbomb,DoS,11,1,0,FN,,,,,,
+782,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+783,warezmaster,R2L,17,1,0,FN,,,,,,
+788,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+789,mscan,Probe,13,1,1,TP,Port scanning,rule+ml,T1046,0.742,74.2,HIGH
+790,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+792,satan,Probe,19,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+793,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+794,sendmail,R2L,2,1,1,TP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+800,smurf,DoS,19,1,0,FN,,,,,,
+803,rootkit,U2R,0,1,0,FN,,,,,,
+804,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+807,mscan,Probe,15,1,0,FN,,,,,,
+812,pod,DoS,15,1,0,FN,,,,,,
+813,neptune,DoS,19,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+817,xterm,U2R,0,1,0,FN,,,,,,
+818,worm,R2L,0,1,0,FN,,,,,,
+829,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+834,guess_passwd,R2L,15,1,0,FN,,,,,,
+835,saint,Probe,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+839,neptune,DoS,19,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+841,apache2,DoS,14,1,1,TP,Statistical traffic anomaly,ml,,0.541,54.1,MEDIUM
+843,portsweep,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.762,76.2,HIGH
+848,mailbomb,DoS,12,1,0,FN,,,,,,
+849,mscan,Probe,13,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+850,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+852,httptunnel,U2R,15,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+854,smurf,DoS,19,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+856,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+857,back,DoS,13,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+862,mscan,Probe,13,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+863,saint,Probe,15,1,0,FN,,,,,,
+865,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+867,xterm,U2R,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+868,processtable,DoS,18,1,0,FN,,,,,,
+876,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+878,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+881,processtable,DoS,14,1,0,FN,,,,,,
+888,buffer_overflow,U2R,12,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+890,processtable,DoS,7,1,0,FN,,,,,,
+891,back,DoS,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+894,snmpgetattack,R2L,4,1,0,FN,,,,,,
+895,apache2,DoS,18,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+899,back,DoS,14,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+901,snmpguess,R2L,15,1,0,FN,,,,,,
+904,normal,normal,17,0,1,FP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+905,mailbomb,DoS,11,1,0,FN,,,,,,
+907,normal,normal,18,0,0,TN,,,,,,
+910,satan,Probe,20,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+912,mailbomb,DoS,11,1,0,FN,,,,,,
+915,processtable,DoS,8,1,0,FN,,,,,,
+916,guess_passwd,R2L,17,1,0,FN,,,,,,
+917,back,DoS,16,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+923,snmpguess,R2L,16,1,0,FN,,,,,,
+925,snmpgetattack,R2L,2,1,0,FN,,,,,,
+926,processtable,DoS,12,1,0,FN,,,,,,
+928,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+929,pod,DoS,2,1,0,FN,,,,,,
+931,mailbomb,DoS,13,1,0,FN,,,,,,
+932,sendmail,R2L,0,1,0,FN,,,,,,
+937,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+939,normal,normal,16,0,0,TN,,,,,,
+940,apache2,DoS,19,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+941,sendmail,R2L,3,1,1,TP,Credential guessing (SNMP/FTP/service auth),rule,T1110.001,0.9,90.0,CRITICAL
+942,portsweep,Probe,18,1,0,FN,,,,,,
+944,ps,U2R,5,1,0,FN,,,,,,
+945,mailbomb,DoS,12,1,0,FN,,,,,,
+947,ftp_write,R2L,12,1,0,FN,,,,,,
+951,mscan,Probe,14,1,1,TP,Port scanning,rule+ml,T1046,0.786,78.6,HIGH
+952,neptune,DoS,19,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+953,warezmaster,R2L,15,1,0,FN,,,,,,
+954,ipsweep,Probe,18,1,0,FN,,,,,,
+957,apache2,DoS,12,1,1,TP,Port scanning,rule+ml,T1046,0.835,83.5,HIGH
+962,snmpguess,R2L,16,1,0,FN,,,,,,
+963,mscan,Probe,13,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+974,processtable,DoS,14,1,0,FN,,,,,,
+976,snmpgetattack,R2L,8,1,0,FN,,,,,,
+978,processtable,DoS,18,1,0,FN,,,,,,
+981,guess_passwd,R2L,15,1,0,FN,,,,,,
+982,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+984,normal,normal,17,0,0,TN,,,,,,
+987,ipsweep,Probe,16,1,0,FN,,,,,,
+988,normal,normal,4,0,0,TN,,,,,,
+992,smurf,DoS,18,1,0,FN,,,,,,
+993,nmap,Probe,19,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+994,warezmaster,R2L,13,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+995,portsweep,Probe,18,1,0,FN,,,,,,
+1000,httptunnel,U2R,11,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1005,xlock,R2L,0,1,0,FN,,,,,,
+1010,snmpguess,R2L,14,1,0,FN,,,,,,
+1012,guess_passwd,R2L,7,1,0,FN,,,,,,
+1015,mailbomb,DoS,11,1,0,FN,,,,,,
+1016,snmpgetattack,R2L,1,1,0,FN,,,,,,
+1025,guess_passwd,R2L,18,1,0,FN,,,,,,
+1027,neptune,DoS,18,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+1029,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+1031,snmpgetattack,R2L,4,1,0,FN,,,,,,
+1034,ipsweep,Probe,15,1,0,FN,,,,,,
+1035,processtable,DoS,18,1,0,FN,,,,,,
+1038,mscan,Probe,18,1,1,TP,Port scanning,rule+ml,T1046,0.741,74.1,HIGH
+1045,xlock,R2L,0,1,1,TP,Privilege escalation indicators,rule,T1068,0.85,85.0,CRITICAL
+1047,normal,normal,20,0,0,TN,,,,,,
+1048,snmpgetattack,R2L,3,1,0,FN,,,,,,
+1050,snmpguess,R2L,15,1,0,FN,,,,,,
+1051,processtable,DoS,18,1,0,FN,,,,,,
+1052,guess_passwd,R2L,7,1,0,FN,,,,,,
+1055,snmpgetattack,R2L,1,1,0,FN,,,,,,
+1056,saint,Probe,20,1,0,FN,,,,,,
+1057,saint,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+1058,guess_passwd,R2L,15,1,0,FN,,,,,,
+1060,neptune,DoS,18,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+1063,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1064,snmpguess,R2L,17,1,0,FN,,,,,,
+1066,guess_passwd,R2L,7,1,0,FN,,,,,,
+1068,httptunnel,U2R,15,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1069,warezmaster,R2L,18,1,0,FN,,,,,,
+1071,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+1074,httptunnel,U2R,15,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1078,warezmaster,R2L,14,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1079,normal,normal,18,0,0,TN,,,,,,
+1081,snmpgetattack,R2L,0,1,0,FN,,,,,,
+1084,named,R2L,6,1,1,TP,Statistical traffic anomaly,ml,,0.533,53.3,MEDIUM
+1086,xterm,U2R,1,1,1,TP,Privilege escalation indicators,rule+ml,T1068,0.91,91.0,CRITICAL
+1087,warezmaster,R2L,19,1,0,FN,,,,,,
+1095,warezmaster,R2L,9,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1098,guess_passwd,R2L,9,1,0,FN,,,,,,
+1103,guess_passwd,R2L,6,1,0,FN,,,,,,
+1104,saint,Probe,15,1,0,FN,,,,,,
+1107,snmpguess,R2L,15,1,0,FN,,,,,,
+1112,httptunnel,U2R,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1118,normal,normal,17,0,1,FP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+1119,apache2,DoS,15,1,0,FN,,,,,,
+1121,pod,DoS,15,1,0,FN,,,,,,
+1123,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+1127,snmpguess,R2L,12,1,0,FN,,,,,,
+1130,pod,DoS,15,1,1,TP,Statistical traffic anomaly,ml,,0.55,55.0,MEDIUM
+1133,normal,normal,18,0,0,TN,,,,,,
+1136,processtable,DoS,19,1,0,FN,,,,,,
+1138,smurf,DoS,18,1,1,TP,Network denial-of-service pattern,rule,T1498,0.8,80.0,HIGH
+1139,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1140,pod,DoS,16,1,0,FN,,,,,,
+1144,snmpgetattack,R2L,1,1,0,FN,,,,,,
+1146,portsweep,Probe,10,1,0,FN,,,,,,
+1147,teardrop,DoS,9,1,0,FN,,,,,,
+1148,named,R2L,1,1,0,FN,,,,,,
+1152,portsweep,Probe,14,1,1,TP,Port scanning,rule+ml,T1046,0.97,97.0,CRITICAL
+1153,saint,Probe,15,1,0,FN,,,,,,
+1158,processtable,DoS,7,1,0,FN,,,,,,
+1161,portsweep,Probe,18,1,1,TP,Port scanning,rule,T1046,0.59,59.0,MEDIUM
+1167,portsweep,Probe,15,1,0,FN,,,,,,
+1172,neptune,DoS,18,1,1,TP,Network denial-of-service pattern,rule+ml,T1498,1.0,100.0,CRITICAL
+1175,satan,Probe,19,1,0,FN,,,,,,
+1183,mailbomb,DoS,12,1,0,FN,,,,,,
+1189,snmpgetattack,R2L,0,1,0,FN,,,,,,
+1197,neptune,DoS,20,1,0,FN,,,,,,
+1205,mailbomb,DoS,11,1,0,FN,,,,,,
+1207,ipsweep,Probe,18,1,0,FN,,,,,,
+1211,ipsweep,Probe,17,1,0,FN,,,,,,
+1212,smurf,DoS,18,1,0,FN,,,,,,
+1219,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1222,snmpgetattack,R2L,7,1,0,FN,,,,,,
+1223,httptunnel,U2R,16,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1225,processtable,DoS,18,1,0,FN,,,,,,
+1226,neptune,DoS,18,1,0,FN,,,,,,
+1228,back,DoS,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1230,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1232,httptunnel,U2R,12,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1233,apache2,DoS,15,1,0,FN,,,,,,
+1235,nmap,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.737,73.7,HIGH
+1243,nmap,Probe,18,1,1,TP,Port scanning,rule,T1046,0.57,57.0,MEDIUM
+1248,satan,Probe,20,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+1249,pod,DoS,16,1,0,FN,,,,,,
+1251,snmpgetattack,R2L,0,1,0,FN,,,,,,
+1252,named,R2L,6,1,0,FN,,,,,,
+1253,rootkit,U2R,5,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1256,apache2,DoS,13,1,1,TP,Port scanning,rule,T1046,0.95,95.0,CRITICAL
+1257,multihop,R2L,1,1,0,FN,,,,,,
+1259,ipsweep,Probe,18,1,0,FN,,,,,,
+1260,satan,Probe,17,1,1,TP,Port scanning,rule+ml,T1046,0.969,96.9,CRITICAL
+1261,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1262,mailbomb,DoS,15,1,0,FN,,,,,,
+1270,land,DoS,13,1,1,TP,Land attack (spoofed src=dst),rule+ml,T1498,0.97,97.0,CRITICAL
+1271,warezmaster,R2L,12,1,1,TP,Suspicious remote command execution,rule,T1059,0.55,55.0,MEDIUM
+1272,multihop,R2L,0,1,0,FN,,,,,,
+1276,snmpguess,R2L,16,1,0,FN,,,,,,
+1278,snmpguess,R2L,16,1,0,FN,,,,,,

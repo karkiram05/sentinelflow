@@ -2,9 +2,12 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    # Credentials come from .env (see .env.example), never from this file.
+    # Compose refuses to start if they are missing rather than falling back
+    # to a guessable default.
     environment:
       POSTGRES_USER: sentinelflow
-      POSTGRES_PASSWORD: sentinelflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: sentinelflow
     volumes:
       - sentinelflow_pgdata:/var/lib/postgresql/data
@@ -27,9 +30,19 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://sentinelflow:sentinelflow@db:5432/sentinelflow
+      DATABASE_URL: postgresql://sentinelflow:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/sentinelflow
+      SENTINELFLOW_API_KEY: ${SENTINELFLOW_API_KEY:?set SENTINELFLOW_API_KEY in .env}
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
-      # Loopback only -- no auth in front of the API yet.
+      # Loopback only. Writes need the API key, but reads are open and there
+      # is no TLS here: put a TLS-terminating reverse proxy in front before
+      # exposing it beyond this machine.
       - "127.0.0.1:8000:8000"
 
 volumes:

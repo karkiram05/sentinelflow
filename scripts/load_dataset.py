@@ -37,18 +37,11 @@ from app.ingest import record_event  # noqa: E402
 from app.state import detection_state  # noqa: E402
 from app import models  # noqa: E402,F401
 
-NSL_KDD_COLUMNS = [
-    "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", "land",
-    "wrong_fragment", "urgent", "hot", "num_failed_logins", "logged_in", "num_compromised",
-    "root_shell", "su_attempted", "num_root", "num_file_creations", "num_shells",
-    "num_access_files", "num_outbound_cmds", "is_host_login", "is_guest_login", "count",
-    "srv_count", "serror_rate", "srv_serror_rate", "rerror_rate", "srv_rerror_rate",
-    "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate", "dst_host_count",
-    "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate",
-    "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate", "dst_host_serror_rate",
-    "dst_host_srv_serror_rate", "dst_host_rerror_rate", "dst_host_srv_rerror_rate",
-    "label", "difficulty",
-]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from nsl_kdd import ATTACK_CATEGORY, NSL_KDD_COLUMNS  # noqa: E402
+
+PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
+
 
 # Demonstration-only IP pool; see module docstring.
 SRC_IP_POOL = [f"192.168.1.{i}" for i in range(10, 40)]
@@ -74,6 +67,9 @@ def main():
     Base.metadata.create_all(bind=engine)
 
     df = pd.read_csv(args.csv, names=NSL_KDD_COLUMNS)
+    # row_id = 0-based line number in the sample file, so every exported
+    # prediction can be traced back to its source row.
+    df.index.name = "row_id"
     print(f"Loaded {len(df)} real NSL-KDD rows from {args.csv}")
 
     # Stratified split by label so both splits cover the same attack
@@ -108,7 +104,7 @@ def main():
 
     def ingest_split(db, split_df, *, is_test: bool):
         nonlocal tp, fp, tn, fn, severity_counts
-        for _, row in split_df.iterrows():
+        for row_id, row in split_df.iterrows():
             ground_truth_attack = row["label"] != "normal"
             event_in = {
                 "source_ip": next(src_ips),
@@ -126,6 +122,24 @@ def main():
             _event, alert = record_event(db, event_in, apply_repeat_boost=False)
             if not is_test:
                 continue
+            predictions.append({
+                "row_id": row_id,
+                "label": row["label"],
+                "attack_category": ATTACK_CATEGORY.get(row["label"], "unknown"),
+                "difficulty": int(row["difficulty"]),
+                "is_attack": int(ground_truth_attack),
+                "alerted": int(alert is not None),
+                "outcome": (
+                    ("TP" if ground_truth_attack else "FP") if alert is not None
+                    else ("FN" if ground_truth_attack else "TN")
+                ),
+                "detection": alert.detection if alert else "",
+                "detection_source": alert.detection_source if alert else "",
+                "mitre_technique": (alert.mitre_technique or "") if alert else "",
+                "confidence": alert.confidence if alert else None,
+                "risk_score": alert.risk_score if alert else None,
+                "severity": alert.severity if alert else "",
+            })
             if alert is not None:
                 severity_counts[alert.severity] += 1
             predicted_attack = alert is not None
@@ -141,6 +155,7 @@ def main():
     db = SessionLocal()
     tp = fp = tn = fn = 0
     severity_counts = Counter()
+    predictions = []
     try:
         # Ingest the fit split first (populates the DB/dashboard, no metrics
         # counted), then the held-out test split (metrics counted here).
@@ -186,8 +201,40 @@ def main():
     print(json.dumps(report, indent=2))
 
     report_path = Path(__file__).resolve().parent.parent / "docs" / "evaluation_report.json"
-    report_path.write_text(json.dumps(report, indent=2))
+    report_path.write_text(json.dumps(report, indent=2) + "\n")
     print(f"\nWrote {report_path}")
+
+    export_processed(train_df, test_df, predictions)
+
+
+def export_processed(train_df, test_df, predictions):
+    """Write the exact splits and per-flow predictions behind the report, so
+    every number in docs/results.md can be recomputed from a CSV."""
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    for name, split in (("train_split.csv", train_df), ("test_split.csv", test_df)):
+        out = split.copy()
+        out["attack_category"] = out["label"].map(ATTACK_CATEGORY)
+        out.sort_index().to_csv(PROCESSED_DIR / name)
+
+    pred_df = pd.DataFrame(predictions).sort_values("row_id")
+    pred_df.to_csv(PROCESSED_DIR / "test_predictions.csv", index=False)
+
+    attacks = pred_df[pred_df["is_attack"] == 1]
+    per_label = (
+        attacks.groupby(["label", "attack_category"])["alerted"]
+        .agg(caught="sum", total="count").reset_index()
+    )
+    per_label["recall"] = (per_label["caught"] / per_label["total"]).round(4)
+    per_label.sort_values(["recall", "total"], ascending=[False, False]).to_csv(
+        PROCESSED_DIR / "recall_by_label.csv", index=False)
+
+    per_cat = (
+        pred_df.groupby("attack_category")["alerted"]
+        .agg(alerted="sum", total="count").reset_index()
+    )
+    per_cat["alert_rate"] = (per_cat["alerted"] / per_cat["total"]).round(4)
+    per_cat.to_csv(PROCESSED_DIR / "alert_rate_by_category.csv", index=False)
+    print(f"Wrote splits, per-flow predictions and recall tables to {PROCESSED_DIR}")
 
 
 if __name__ == "__main__":

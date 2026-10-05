@@ -5,6 +5,28 @@ and `/redoc` once the server is running.
 
 Base URL (local): `http://localhost:8000`
 
+## Authentication, limits and headers
+
+- **Writes need an API key.** `POST /events` and `PATCH /alerts/{id}`
+  require an `X-API-Key` header matching the server's
+  `SENTINELFLOW_API_KEY`. A wrong or missing key gets `401`. If the server
+  has no key configured, writes return `503`: they fail closed rather than
+  run open.
+- **Reads are open** (`GET` endpoints and the dashboard), so keep the API on
+  loopback or behind an authenticating reverse proxy. See
+  `docs/threat-model.md`.
+- **Rate limits**: 120 writes and 300 reads per minute per client address,
+  per process (`RATE_LIMIT_WRITES_PER_MINUTE`, `RATE_LIMIT_READS_PER_MINUTE`).
+  Exceeding one returns `429` with a `Retry-After` header.
+- **Body size**: requests larger than 16 KB (`MAX_REQUEST_BYTES`) get `413`.
+- **Input bounds**: IPs must be valid IPv4/IPv6, ports 0-65535, byte counts
+  and duration non-negative, short strings length-capped, and `features`
+  at most 64 keys with scalar values only. Anything else gets `422`.
+- **Response headers**: every response carries a Content-Security-Policy
+  (`script-src 'self'` for the dashboard), `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` and
+  HSTS. Data endpoints add `Cache-Control: no-store`.
+
 ## `POST /events`
 
 Submit one network/IoT flow record. Runs it through the detection engine
@@ -14,6 +36,7 @@ fire.
 ```bash
 curl -X POST http://localhost:8000/events \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: $SENTINELFLOW_API_KEY" \
   -d '{
     "source_ip": "192.168.1.23",
     "destination_ip": "10.0.0.12",
@@ -65,8 +88,14 @@ Fetch a single alert. `404` if it doesn't exist.
 
 ## `PATCH /alerts/{id}?status=ACKNOWLEDGED`
 
-Update an alert's status. `status` must be one of `OPEN`, `ACKNOWLEDGED`,
-`CLOSED` (case-insensitive) or the request is rejected with `400`.
+Update an alert's status. Needs the `X-API-Key` header. `status` must be
+one of `OPEN`, `ACKNOWLEDGED`, `CLOSED` (case-insensitive) or the request
+is rejected with `400`.
+
+```bash
+curl -X PATCH "http://localhost:8000/alerts/1?status=ACKNOWLEDGED" \
+  -H "X-API-Key: $SENTINELFLOW_API_KEY"
+```
 
 ## `GET /devices`
 

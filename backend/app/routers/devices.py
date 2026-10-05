@@ -9,8 +9,8 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 @router.get("", response_model=list[schemas.DeviceOut])
 def list_devices(
-    limit: int = Query(50, le=500),
-    offset: int = 0,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     min_risk_score: float = 0.0,
     db: Session = Depends(get_db),
 ):

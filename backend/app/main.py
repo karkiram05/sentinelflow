@@ -8,6 +8,11 @@ from fastapi.responses import FileResponse
 from app.config import settings
 from app.database import init_db
 from app.routers import alerts, devices, events, statistics
+from app.security import (
+    BodySizeLimitMiddleware,
+    RateLimitMiddleware,
+    SecurityHeadersMiddleware,
+)
 
 
 @asynccontextmanager
@@ -26,6 +31,13 @@ app = FastAPI(
     ),
     lifespan=lifespan,
 )
+
+# Starlette runs the last-added middleware first, so the order below is
+# outermost -> innermost: security headers wrap every response (including
+# 413/429 rejections), then the body-size limit, then the rate limiter.
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(BodySizeLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(events.router)
 app.include_router(alerts.router)

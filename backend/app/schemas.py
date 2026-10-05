@@ -2,7 +2,14 @@ import datetime as dt
 import ipaddress
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+# Upper bounds on attacker-controlled input. The features dict is open by
+# design (new detection features don't need an API change), so it is
+# bounded instead: number of keys, key length, and scalar-only values.
+MAX_FEATURES = 64
+MAX_FEATURE_KEY_LEN = 64
+MAX_FEATURE_STR_LEN = 64
 
 
 def _validate_ip(value: str) -> str:
@@ -22,17 +29,31 @@ def _validate_ip(value: str) -> str:
 class EventIn(BaseModel):
     """Payload for submitting a single network flow record to /events."""
 
-    source_ip: str
-    destination_ip: str
-    protocol: str
-    destination_port: Optional[int] = None
-    service: Optional[str] = None
-    flag: Optional[str] = None
-    duration: float = 0.0
-    src_bytes: int = 0
-    dst_bytes: int = 0
+    source_ip: str = Field(max_length=45)
+    destination_ip: str = Field(max_length=45)
+    protocol: str = Field(min_length=1, max_length=16)
+    destination_port: Optional[int] = Field(default=None, ge=0, le=65535)
+    service: Optional[str] = Field(default=None, max_length=64)
+    flag: Optional[str] = Field(default=None, max_length=16)
+    duration: float = Field(default=0.0, ge=0, le=1e9)
+    src_bytes: int = Field(default=0, ge=0, le=10**15)
+    dst_bytes: int = Field(default=0, ge=0, le=10**15)
     features: dict = {}
-    ground_truth_label: Optional[str] = None
+    ground_truth_label: Optional[str] = Field(default=None, max_length=64)
+
+    @field_validator("features")
+    @classmethod
+    def _features_must_be_bounded(cls, value: dict) -> dict:
+        if len(value) > MAX_FEATURES:
+            raise ValueError(f"features may hold at most {MAX_FEATURES} keys")
+        for key, item in value.items():
+            if len(key) > MAX_FEATURE_KEY_LEN:
+                raise ValueError(f"feature name longer than {MAX_FEATURE_KEY_LEN} characters")
+            if item is not None and not isinstance(item, (int, float, str, bool)):
+                raise ValueError(f"feature {key!r} must be a number, string, boolean or null")
+            if isinstance(item, str) and len(item) > MAX_FEATURE_STR_LEN:
+                raise ValueError(f"feature {key!r} longer than {MAX_FEATURE_STR_LEN} characters")
+        return value
 
     @field_validator("source_ip", "destination_ip")
     @classmethod

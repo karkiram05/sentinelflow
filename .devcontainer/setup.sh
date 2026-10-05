@@ -7,6 +7,15 @@ source .venv/bin/activate
 pip install --upgrade pip -q
 pip install -r backend/requirements-dev.txt -q
 
+# A random per-machine API key for the write endpoints, generated once and
+# kept in the untracked .env. Never a fixed default.
+if [ ! -f .env ]; then
+  cp .env.example .env
+  key="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+  sed -i.bak "s|^SENTINELFLOW_API_KEY=.*|SENTINELFLOW_API_KEY=${key}|" .env && rm -f .env.bak
+  echo "Created .env with a random SENTINELFLOW_API_KEY (needed for POST /events)."
+fi
+
 echo ""
 echo "Seeding the database with the real NSL-KDD evaluation sample..."
 python scripts/load_dataset.py --reset-db

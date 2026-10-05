@@ -33,8 +33,17 @@ jobs:
         working-directory: backend
         run: python -m pytest tests/ -v
 
+      - name: Verify raw data checksum and sample provenance, rebuild clean data
+        run: python scripts/build_data.py
+
       - name: Run detection engine against the real labeled sample dataset
         run: python scripts/load_dataset.py --reset-db
+
+      - name: Fail if the committed results drift from a fresh run
+        run: git diff --exit-code -- docs/evaluation_report.json data/clean data/processed
+
+      - name: Render charts from the fresh run
+        run: python scripts/make_charts.py
 
   security:
     runs-on: ubuntu-latest

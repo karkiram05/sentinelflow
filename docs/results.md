@@ -8,16 +8,44 @@ is a synthetic traffic generator grading its own homework: the labels come
 from the dataset, not from SentinelFlow.
 
 `data/sample/nsl_kdd_sample.csv` is a stratified sample of the public
-`KDDTest-21` split (1,279 rows, capped at 60 rows per attack category to
-keep the repo small while preserving all 38 distinct attack types plus
+`KDDTest-21` split (1,279 rows, capped at 60 rows per label to
+keep the repo small while preserving all 37 distinct attack types plus
 normal traffic).
 
 Reproduce with:
 
 ```bash
 pip install -r backend/requirements-dev.txt
-python scripts/load_dataset.py --reset-db
+python scripts/build_data.py              # checksum + provenance + clean CSV
+python scripts/load_dataset.py --reset-db # evaluation + data/processed/*.csv
+python scripts/make_charts.py             # docs/figures/*.png
 ```
+
+## Data lineage
+
+Every file below is written by a script; none is hand-edited. CI reruns
+the pipeline and fails if the committed outputs drift from a fresh run.
+
+| Stage | File | Written by |
+|---|---|---|
+| Raw | `data/raw/KDDTest-21.txt` (11,850 rows, SHA-256 pinned) | downloaded, untouched (see `data/README.md`) |
+| Sample | `data/sample/nsl_kdd_sample.csv` (1,279 rows) | stratified sample of the raw file, max 60 rows per label |
+| Clean | `data/clean/nsl_kdd_sample_clean.csv` | `scripts/build_data.py` |
+| Quality report | `data/clean/data_quality_report.json` | `scripts/build_data.py` |
+| Splits | `data/processed/train_split.csv`, `test_split.csv` | `scripts/load_dataset.py` |
+| Per-flow results | `data/processed/test_predictions.csv` (one row per test flow: label, alert or not, detection, ATT&CK technique, severity, risk) | `scripts/load_dataset.py` |
+| Summary tables | `data/processed/recall_by_label.csv`, `alert_rate_by_category.csv` | `scripts/load_dataset.py` |
+| Headline metrics | `docs/evaluation_report.json` | `scripts/load_dataset.py` |
+| Charts | `docs/figures/*.png` | `scripts/make_charts.py` |
+
+`build_data.py` checks that all 1,279 sample rows exist in the raw file.
+(A plain line-by-line match finds none, because pandas wrote `0.00` as
+`0.0` when the sample was created; the script compares numeric fields as
+numbers.) The quality report found no nulls, no duplicate rows and no
+out-of-range values, so nothing was dropped. It did find one feature
+vector that appears under two different labels, which is label noise in
+NSL-KDD itself: no detector working from these features alone could get
+both rows right.
 
 ## Methodology: held-out evaluation, not self-evaluation
 
@@ -54,6 +82,8 @@ verifiable claim rather than an assumption.
 | False negatives / True negatives | 259 / 15 |
 | Test-split alerts by severity | 87 CRITICAL, 38 HIGH, 113 MEDIUM, 0 LOW |
 
+![Confusion matrix on the held-out test split](figures/confusion_matrix.png)
+
 *(Regenerate `docs/evaluation_report.json` by rerunning
 `python scripts/load_dataset.py --reset-db` -- these numbers are not
 hand-edited.)*
@@ -72,7 +102,7 @@ is the first thing to fix before quoting any false positive figure.
 **96.2% precision is a property of this evaluation sample, not a
 production guarantee.** This sample's test split is roughly 95% attack
 traffic (only 24 of 512 rows are labeled `normal`) because it was built to
-preserve all 38 attack categories at a usable sample size, not to mirror a
+preserve all 37 attack types at a usable sample size, not to mirror a
 real network's traffic mix. Real production traffic is overwhelmingly
 benign -- typically single-digit percentages of it are actually malicious.
 Precision is highly sensitive to that base rate: the same detector run
@@ -85,6 +115,8 @@ real, honestly-measured number and a useful regression/demo signal -- it is
 not a claim about what precision would look like pointed at a live
 production network, and shouldn't be read as one.
 
+![Detection rate by attack category](figures/recall_by_category.png)
+
 **Recall is the honest cost of conservative thresholds, and of per-flow
 detection.** Just over half of labeled attacks in the test split are
 missed. Broken down by attack category, the pattern is not random:
@@ -95,10 +127,14 @@ missed. Broken down by attack category, the pattern is not random:
 | Multi-connection probes (`satan`, `smurf`, `neptune`, `warezmaster`, `portsweep`, `saint`) | 55-80% | Partially visible per-flow; SentinelFlow catches the more overt attempts |
 | Slow/low-and-slow attacks (`guess_passwd`, `snmpguess`, `ipsweep`, `mailbomb`, `processtable`, `teardrop`, `snmpgetattack`) | 0% | These only become visible when you correlate *many* flows from the same source over a time window. SentinelFlow's MVP is deliberately per-flow (see `docs/architecture.md`), so it structurally cannot see this pattern yet -- this isn't a bug, it's a scoped-out feature (cross-flow/session correlation is the top roadmap item) |
 
-Full per-category breakdown on the held-out test split (rows with fewer
-than a handful of test-split examples, like `imap`, are excluded here
-because a rate computed over 1-2 rows isn't meaningful; they're still
-counted correctly in the headline TP/FP/TN/FN above):
+Full per-label breakdown on the held-out test split. Labels with fewer
+than 5 test rows (`loadmodule`, `perl`, `phf`, `sqlattack`, `xsnoop`,
+`ftp_write`, `udpstorm`, `worm`, one row each) are left out, because a rate
+over a single flow means nothing; they still count in the headline
+TP/FP/TN/FN above, and all of them are in `data/processed/recall_by_label.csv`.
+
+![Detection rate by attack type](figures/recall_by_attack_type.png)
+
 
 | Attack label | Caught | Total (test split) | Rate |
 |---|---|---|---|
@@ -129,11 +165,18 @@ counted correctly in the headline TP/FP/TN/FN above):
 | processtable | 0 | 24 | 0% |
 | teardrop | 0 | 5 | 0% |
 | snmpgetattack | 0 | 24 | 0% |
+| ps | 0 | 6 | 0% |
 
 Of the 24 `normal` (non-attack) rows in the test split, 9 were flagged --
 these 9 are exactly the 9 false positives in the headline numbers above.
 
 ## Severity distribution
+
+![Alert severity on the test split](figures/severity_distribution.png)
+
+On the test split, 1 of the 9 false positives was scored CRITICAL and 7
+were HIGH. So severity alone would not keep false alarms out of the top of
+an analyst's queue.
 
 Detection (alert or no alert) and severity are separate steps, so the
 changes below leave every precision/recall figure above unchanged; they

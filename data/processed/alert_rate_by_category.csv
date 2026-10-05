@@ -1,0 +1,6 @@
+attack_category,alerted,total,alert_rate
+DoS,76,169,0.4497
+Probe,91,144,0.6319
+R2L,26,124,0.2097
+U2R,36,51,0.7059
+normal,9,24,0.375

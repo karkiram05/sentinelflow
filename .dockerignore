@@ -7,3 +7,9 @@
 venv
 docs
 scripts
+.env
+.env.*
+!.env.example
+data
+.github
+.devcontainer

@@ -4,11 +4,17 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.database import get_db
 from app.ingest import record_event
+from app.security import require_api_key
 
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-@router.post("", response_model=schemas.EventOut, status_code=201)
+@router.post(
+    "",
+    response_model=schemas.EventOut,
+    status_code=201,
+    dependencies=[Depends(require_api_key)],
+)
 def create_event(event_in: schemas.EventIn, db: Session = Depends(get_db)):
     event, _alert = record_event(db, event_in.model_dump())
     return event
@@ -16,9 +22,9 @@ def create_event(event_in: schemas.EventIn, db: Session = Depends(get_db)):
 
 @router.get("", response_model=list[schemas.EventOut])
 def list_events(
-    limit: int = Query(50, le=500),
-    offset: int = 0,
-    source_ip: str | None = None,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    source_ip: str | None = Query(None, max_length=45),
     db: Session = Depends(get_db),
 ):
     q = db.query(models.Event)

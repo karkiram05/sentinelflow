@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
+from app.security import require_api_key
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -11,11 +12,11 @@ VALID_STATUSES = {"OPEN", "ACKNOWLEDGED", "CLOSED"}
 
 @router.get("", response_model=list[schemas.AlertOut])
 def list_alerts(
-    limit: int = Query(50, le=500),
-    offset: int = 0,
-    severity: str | None = None,
-    status: str | None = None,
-    source_ip: str | None = None,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    severity: str | None = Query(None, max_length=16),
+    status: str | None = Query(None, max_length=16),
+    source_ip: str | None = Query(None, max_length=45),
     db: Session = Depends(get_db),
 ):
     q = db.query(models.Alert)
@@ -36,8 +37,16 @@ def get_alert(alert_id: int, db: Session = Depends(get_db)):
     return alert
 
 
-@router.patch("/{alert_id}", response_model=schemas.AlertOut)
-def update_alert_status(alert_id: int, status: str, db: Session = Depends(get_db)):
+@router.patch(
+    "/{alert_id}",
+    response_model=schemas.AlertOut,
+    dependencies=[Depends(require_api_key)],
+)
+def update_alert_status(
+    alert_id: int,
+    status: str = Query(..., max_length=16),
+    db: Session = Depends(get_db),
+):
     status = status.upper()
     if status not in VALID_STATUSES:
         raise HTTPException(status_code=400, detail=f"status must be one of {sorted(VALID_STATUSES)}")
